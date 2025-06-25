@@ -7,11 +7,6 @@ const DB_USERNAME = process.env.DB_USERNAME
 const DB_PASSWORD = process.env.DB_PASSWORD
 const DB_PORT = process.env.DB_PORT
 const DB_DATABASE = process.env.DB_DATABASE
-// const SECRET = process.env.SECRET
-// const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
-// const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY
-// const EMAIL_USER = process.env.EMAIL_USER
-// const EMAIL_HOST = process.env.EMAIL_HOST
 
 module.exports = { 
                     // MONGODB_URI, 
