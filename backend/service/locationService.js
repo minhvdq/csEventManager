@@ -1,4 +1,4 @@
-const db = require('../db')
+const db = require('../utils/db')
 
 const getLocationById = async (id) => {
     const [rows] = await db.query('SELECT * FROM locations WHERE id = ?', [id])

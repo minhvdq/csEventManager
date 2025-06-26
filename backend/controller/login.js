@@ -1,0 +1,14 @@
+const loginRouter = require('express').Router()
+const loginService = require('../service/loginService')
+
+loginRouter.post('/', async (req, res) => {
+    const { email, password } = req.body
+    try{
+        const { token, email, isAdmin } = await loginService.login({ email, password })
+        res.status(201).json({ token, email, isAdmin })
+    }catch(error){
+        res.status(400).json({ message: error.message })
+    }
+})
+
+module.exports = loginRouter

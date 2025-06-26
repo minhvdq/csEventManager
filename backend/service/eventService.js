@@ -1,4 +1,4 @@
-const db = require('../db')
+const db = require('../utils/db')
 const locationService = require('./locationService')
 
 const getAllEvents = async () => {

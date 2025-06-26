@@ -3,10 +3,10 @@ const jwt = require('jsonwebtoken')
 const config = require('./config')
 
 const requestLogger = (request, response, next) => {
-  logger.infor('Method:', request.method)
-  logger.infor('Path:  ', request.path)
-  logger.infor('Body:  ', request.body)
-  logger.infor('---')
+  logger.info('Method:', request.method)
+  logger.info('Path:  ', request.path)
+  logger.info('Body:  ', request.body)
+  logger.info('---')
   next()
 }
 

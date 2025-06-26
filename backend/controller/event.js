@@ -1,9 +1,14 @@
-const evemtRouter = require('express').Router()
+const eventRouter = require('express').Router()
 const eventService = require('../service/eventService')
 
-evemtRouter.get('/', async (req, res) => {
-    const events = await eventService.getAllEvents()
-    res.status(200).json(events)
+eventRouter.get('/', async (req, res) => {
+    try{
+        const events = await eventService.getAllEvents()
+        res.status(200).json(events)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+    
 })
 
 eventRouter.post('/', async (req, res) => {
@@ -14,7 +19,7 @@ eventRouter.post('/', async (req, res) => {
     }catch(error){
         res.status(400).json({message: error.message})
     }
+    
 })
 
-
-module.exports = evemtRouter
+module.exports = eventRouter

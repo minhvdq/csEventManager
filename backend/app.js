@@ -4,8 +4,12 @@ const cors = require('cors')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
 const middlewares = require('./utils/middlewares')
-const mysql = require('mysql')
 const path = require('path')
+
+// Import routes
+const userRouter = require('./controller/user')
+const eventRouter = require('./controller/event')
+const loginRouter = require('./controller/login')
 
 const allowedOrigins = [
     'http://localhost:5173',   // Vite dev server
@@ -36,6 +40,10 @@ app.use(express.json())
 app.use(middlewares.requestLogger)
 app.use(middlewares.tokenExtractor)
 
+// Register routes
+app.use('/api/users', userRouter)
+app.use('/api/events', eventRouter)
+app.use('/api/login', loginRouter)
 
 // Error handling middleware should be last
 app.use(middlewares.unknownEndpoint)

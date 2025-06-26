@@ -1,6 +1,6 @@
 // db.js
 const mysql = require('mysql2/promise');
-const config = require('./utils/config')
+const config = require('./config')
 
 const pool = mysql.createPool({
   host: config.DB_HOST,
@@ -11,6 +11,6 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-});
+})
 
 module.exports = pool;

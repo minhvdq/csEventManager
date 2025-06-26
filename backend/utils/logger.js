@@ -1,4 +1,4 @@
-const infor = (...params) => {
+const info = (...params) => {
     console.log(...params)
 }
 
@@ -6,4 +6,4 @@ const error = (...mess) => {
     console.log(...mess)
 }
 
-module.exports = {infor, error}
+module.exports = {info, error}
