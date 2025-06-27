@@ -1,5 +1,10 @@
 const db = require('../utils/db')
 
+const getAll = async () => {
+    const [rows] = await db.query('SELECT * FROM locations')
+    return rows
+}
+
 const getLocationById = async (id) => {
     const [rows] = await db.query('SELECT * FROM locations WHERE id = ?', [id])
     return rows[0]
@@ -11,6 +16,7 @@ const createLocation = async ({name, address, lat, lng, room}) => {
 }
 
 module.exports = {
+    getAll,
     getLocationById,
     createLocation
 }

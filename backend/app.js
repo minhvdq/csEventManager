@@ -10,6 +10,7 @@ const path = require('path')
 const userRouter = require('./controller/user')
 const eventRouter = require('./controller/event')
 const loginRouter = require('./controller/login')
+const locationRouter = require('./controller/location')
 
 const allowedOrigins = [
     'http://localhost:5173',   // Vite dev server
@@ -44,6 +45,7 @@ app.use(middlewares.tokenExtractor)
 app.use('/api/users', userRouter)
 app.use('/api/events', eventRouter)
 app.use('/api/login', loginRouter)
+app.use('/api/locations', locationRouter)
 
 // Error handling middleware should be last
 app.use(middlewares.unknownEndpoint)

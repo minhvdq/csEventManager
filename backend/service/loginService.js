@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const config = require('../utils/config')
 
-const login = async ({email, password}) => {
+const login = async (email, password) => {
     if(!email || !password) {
         throw new Error('Email and password are required')
     }
@@ -18,10 +18,12 @@ const login = async ({email, password}) => {
     }
 
     const userForToken = {
-        id: user.id,
+        id: user.user_id,
         email: user.email,
         isAdmin: user.is_admin
     }
+
+    // return {token}
     const token = jwt.sign(userForToken, config.SECRET)
     return { token, email: user.email, isAdmin: user.is_admin }
 }

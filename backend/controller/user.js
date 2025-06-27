@@ -10,6 +10,12 @@ userRouter.get('/', async (req, res) => {
     }
 })
 
+userRouter.get('/:email', async (req, res) => {
+    email = req.params.email
+    const user = await userService.getUserByEmail(email)
+    res.status(200).json(user)
+})
+
 userRouter.post('/', async (req, res) => {
     const body = req.body
     try{
@@ -18,6 +24,12 @@ userRouter.post('/', async (req, res) => {
     }catch(error){
         res.status(400).json({message: error.message})
     }
+})
+
+userRouter.delete('/:id', async (req, res) => {
+    id = req.params.id
+    userService.deleteUser(id)
+    res.status(204).send(`Successfully Delete user with id ${id}`)
 })
 
 module.exports = userRouter
