@@ -8,7 +8,7 @@ const getAllUsers = async () => {
 }
 
 const getUserById = async (id) => {
-    const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [id])
+    const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [id])
     return rows[0]
 }
 

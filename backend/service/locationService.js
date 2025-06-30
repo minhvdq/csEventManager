@@ -6,7 +6,7 @@ const getAll = async () => {
 }
 
 const getLocationById = async (id) => {
-    const [rows] = await db.query('SELECT * FROM locations WHERE id = ?', [id])
+    const [rows] = await db.query('SELECT * FROM locations WHERE location_id = ?', [id])
     return rows[0]
 }
 

@@ -14,9 +14,9 @@ export default function Authentication({ curUser, setCurUser }) {
 
   useEffect(() => {
     if (curUser) {
-      return <Navigate to={frontendBase} />;
+      window.location.href = `${frontendBase}`;
     }
-  }, []);
+  }, [curUser]);
 
   const handleEmail = (event) => {
     setEmail(event.target.value);

@@ -1,60 +1,91 @@
-import "./NavBar.css"
-import {useState} from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "./NavBar.css";
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { frontendBase } from "../utils/homeUrl";
 
-const homeUrl = ''
+const homeUrl = frontendBase;
 
 const Logo = () => (
-    <div onClick={() => {window.location.href = `${homeUrl}/`}} className="container align-items-center justify-content-center">
-        <div className="row align-items-center justify-content-center">
-            {/* Logo Section */}
-            <div className="col-auto" id="logo-wrapper">
-                <img className='logo-img' src={`/cS-mug2.png`} alt="logo" height='100px' width='100px' />
-            </div>
-        </div>
+    <div
+        onClick={() => {
+            window.location.href = `${homeUrl}/`;
+        }}
+        className="d-flex align-items-center"
+        style={{ cursor: "pointer" }}
+    >
+        <img
+            className="logo-img"
+            src={`/cS-mug2.png`}
+            alt="logo"
+            height="60"
+            style={{ borderRadius: "8px" }}
+        />
+        <span className="ms-2 logo-txt fw-bold">Event Hub</span>
     </div>
-)
+);
 
-export default function NavBar() {
-    const [showHamburger, setShowHamburger] = useState(false)
-    const toggleMenu = (e) => 
-    {   
-        // e.preventDefault()
-        setShowHamburger(!showHamburger)
-    }
+export default function NavBar({ curUser, handleLogout }) {
+  const [showHamburger, setShowHamburger] = useState(false);
+  const toggleMenu = () => setShowHamburger(!showHamburger);
 
-    return(
-        <div>
-            <nav id="desktop-nav">
-                <div className="logo">
+    return (
+        <header className="shadow-sm bg-white sticky-top">
+        {/* Desktop Nav */}
+            <nav
+                id="desktop-nav"
+                className="container py-3 d-flex justify-content-between align-items-center"
+            >
+                <Logo />
+                <ul className="nav-links d-flex gap-4 m-0 align-items-center">
+                    <li>
+                        <a href={`${homeUrl}`}>Home</a>
+                    </li>
+                    <li>
+                        {curUser ? (
+                        <a onClick={handleLogout} style={{ cursor: "pointer" }}>
+                            Logout
+                        </a>
+                        ) : (
+                        <a href={`${homeUrl}/authen`}>Login</a>
+                        )}
+                    </li>
+                </ul>
+            </nav>
+
+            {/* Hamburger Nav */}
+            <nav id="hamburger-nav" className="container py-3">
+                <div className="d-flex justify-content-between align-items-center">
                     <Logo />
-                </div>
-                <div>
-                    <ul className="nav-links">
-                        <li><a href={`${homeUrl}/#about`} >Home</a></li>
-                        <li><a href={`${homeUrl}/projects`} >Projects</a></li>
-                    </ul>
-                </div>
-            </nav>
-            <nav id="hamburger-nav" className="container" style={{position: 'relative'}}>
-                <div className="row">
-                    <div className="col logo">
-                        <img src={`${homeUrl}/cS-mug2.png`} alt='logo' width='80px' height='80px' />
-                    </div>
-                    <div className="col hamburger-menu" style={{alignItems: 'center'}}>
-                        <div className={`hamburger-icon ${showHamburger ? 'open' : ''}`} onClick={toggleMenu}>
+                    <div className="hamburger-menu">
+                        <div
+                            className={`hamburger-icon ${showHamburger ? "open" : ""}`}
+                            onClick={toggleMenu}
+                        >
                             <span></span>
                             <span></span>
                             <span></span>
                         </div>
-                        <div className={`menu-links ${showHamburger ? 'open' : ''}`}>
-                            <li><a href={`${homeUrl}/#about`} onClick={toggleMenu}>Home</a></li>
-                            <li><a href={`${homeUrl}/projects`} onClick={toggleMenu}>Projects</a></li>
+                        <div className={`menu-links ${showHamburger ? "open" : ""}`}>
+                            <li>
+                                <a href={`${homeUrl}`} onClick={toggleMenu}>
+                                    Home
+                                </a>
+                            </li>
+                            <li>
+                                {curUser ? (
+                                <a onClick={() => { toggleMenu(); handleLogout(); }} style={{ cursor: "pointer" }}>
+                                    Logout
+                                </a>
+                                ) : (
+                                <a href={`${homeUrl}/authen`} onClick={toggleMenu}>
+                                    Login
+                                </a>
+                                )}
+                            </li>
                         </div>
                     </div>
-                </div> 
+                </div>
             </nav>
-        </div>
-        
-    )
+        </header>
+    );
 }

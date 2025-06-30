@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     eventService.getAll().then(fetchedEvents => {
-        const data = fetchedEvents.data
+        const data = fetchedEvents
         console.log('events in database: ' + JSON.stringify(data))
         setEvents(data)
     })
@@ -28,12 +28,19 @@ function App() {
       console.log('cur user is ' + lUser)
       setCurUser(lUser)
     }
+
+    console.log("current user is: " + curUser)
   }, [])
 
+  const handleLogout = (event) => {
+    event.preventDefault()
+    window.localStorage.removeItem("localUser")
+    setCurUser(null)
+  }
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Home events={ events } curUser={ curUser } setCurUser={setCurUser}/>} />
+        <Route path='/' element={<Home events={ events } curUser={ curUser } setCurUser={setCurUser} handleLogout={handleLogout}/>} />
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>
         <Route path='/admin' element={<Admin events={ events } curUser={ curUser } setCurUser={setCurUser}/>} />
         <Route path='/create' element={<CreateEventForm curUser={curUser}/>} />

@@ -1,8 +1,10 @@
 const eventRouter = require('express').Router()
 const eventService = require('../service/eventService')
-const {auth} = require('../utils/middlewares')
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 const multer = require("multer");
 const upload = multer(); // or configure storage if needed
+const userService = require('../service/userService')
 
 eventRouter.get('/', async (req, res) => {
     try{
@@ -18,10 +20,20 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
     if (req.body.locationId === 'null') {
         req.body.locationId = null;
     }
-    console.log("Method:", req.method);
-    console.log("Path:  ", req.originalUrl);
-    console.log("Body:  ", req.body);       // ✅ now parsed
-    console.log("File:  ", req.file);       // ✅ file object if uploaded
+    
+    const decodedToken = await jwt.decode(req.token, config.SECRET)
+
+    if(!decodedToken){
+        return res.status(400).json({error: "Invalid Token"})
+    }
+
+    const userId = decodedToken.id
+
+    const user = await userService.getUserById(userId)
+
+    if(!user){
+        return res.status(400).json({error: "User does not exists"})
+    }
 
     try {
         const {
@@ -33,8 +45,8 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             lat,
             lng,
             room,
-            startTime,
-            endTime,
+            start_time,
+            end_time,
             need_resume,
             need_major,
             on_campus,
@@ -53,13 +65,13 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             lng,
             room,
             },
-            start_time: startTime,
-            end_time: endTime,
+            start_time: start_time,
+            end_time: end_time,
             need_resume: need_resume === "true",      // Convert strings to boolean
             need_major: need_major === "true",
             on_campus: on_campus === "true",
             is_colloquium: is_colloquium === "true",
-            created_by: 1,
+            created_by: userId,
             poster_data: req.file?.buffer || null,
             capacity: capacity || null,
         });

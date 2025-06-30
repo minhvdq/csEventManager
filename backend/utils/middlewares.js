@@ -46,33 +46,9 @@ const tokenExtractor = async ( request, response, next) => {
 
 }
 
-const auth = async (request, response, next) => {
-  const autho = request.get('authorization')
-  if (!autho || !autho.startsWith('Bearer ')) {
-    return response.status(401).json({ error: 'token missing or invalid' })
-  }
-
-  const token = autho.replace('Bearer ', '')
-  try {
-    const decodedToken = jwt.verify(token, config.SECRET)
-    const user = await userService.getUserById(decodedToken.id)
-
-    if( !user ){
-      return response.status(403).json({error: "User not found"})
-    }
-    
-    request.user = user
-    next()
-  } catch (error) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-}
-
-
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
-  tokenExtractor,
-  auth
+  tokenExtractor
 }

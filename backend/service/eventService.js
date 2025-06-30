@@ -2,19 +2,22 @@ const db = require('../utils/db')
 const locationService = require('./locationService')
 
 const getAllEvents = async () => {
-    const [events] = await db.query('SELECT * FROM events');
+    const [events] = await db.query('SELECT * FROM events')
+
+    const locations = await locationService.getAll()
   
     const modifiedEvents = events.map(event => {
-        if (!event.poster) return event
-    
-        const posterBuffer = event.poster
-        const posterBase64 = posterBuffer.toString('base64')
-
-        const location = locationService.getLocationById(event.location_id)
+        let poster_data = event.poster_data
+        if (event.poster_data){
+          const posterBuffer = event.poster_data
+          const posterBase64 = posterBuffer.toString('base64')
+          poster_data = `data:image/jpeg;base64,${posterBase64}`
+        }
+        const location = locations.find(l => l.location_id === event.location_id)
 
         return {
             ...event,
-            poster: `data:image/jpeg;base64,${posterBase64}`,
+            poster_data: poster_data,
             location: location
         }
     })
@@ -26,7 +29,7 @@ const getEventById = async (id) => {
     const [rows] = await db.query('SELECT * FROM events WHERE id = ?', [id])
     const event =  rows[0]
 
-    const location = locationService.getLocationById(event.location_id)
+    const location = await locationService.getLocationById(event.location_id)
 
     if(!event.poster){
         return {...event, location: location}
@@ -42,7 +45,7 @@ const getEventById = async (id) => {
 
 const createEvent = async (body) => {
     const requiredFields = [
-      "name", "description", "start_time", "end_time", "created_by", "poster_data"
+      "name", "description", "start_time", "end_time", "created_by"
     ];
   
     for (const field of requiredFields) {
