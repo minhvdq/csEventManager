@@ -27,15 +27,14 @@ export default function CreateEventForm({curUser}) {
     const [isLimited, setIsLimited] = useState(false);
     const [capacity, setCapacity] = useState(null);
     const [dbLocations, setDbLocations] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
 
     useEffect(() => {
+        setLoading(true);
         if (!curUser && !window.localStorage.getItem("localUser")) {
             window.location.href = `${frontendBase}/authen`;
         }
-    
-        setLoading(true);
         location.getAll().then(locations => {
             setDbLocations(locations);
             setLoading(false);

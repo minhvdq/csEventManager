@@ -54,9 +54,6 @@ const createEvent = async (body) => {
       }
     }
   
-    // Optional: check boolean fields if needed
-    if (typeof body.need_resume !== "boolean") throw new Error("Invalid value for need_resume");
-  
     let locationId = body.locationId;
     if (!locationId) {
       const locationMetadata = await locationService.createLocation(body.location);

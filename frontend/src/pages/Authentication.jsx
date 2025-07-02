@@ -18,7 +18,7 @@ export default function Authentication({ curUser, setCurUser }) {
     }
   }, [curUser]);
 
-  const handleEmail = (event) => {
+  const handleEmail = (event) => {  
     setEmail(event.target.value);
   };
 
@@ -29,7 +29,7 @@ export default function Authentication({ curUser, setCurUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(""); 
 
     try {
       const logUser = await loginService.login({ email, password });
