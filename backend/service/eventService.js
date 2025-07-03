@@ -1,10 +1,10 @@
-const db = require('../utils/db')
-const locationService = require('./locationService')
+const Event = require('../dataaccess/event')
+const Location = require('../dataaccess/location')
 
 const getAllEvents = async () => {
-    const [events] = await db.query('SELECT * FROM events')
+    const events = await Event.getAll()
 
-    const locations = await locationService.getAll()
+    const locations = await Location.getAll()
   
     const modifiedEvents = events.map(event => {
         let poster_data = event.poster_data
@@ -26,26 +26,28 @@ const getAllEvents = async () => {
 };
 
 const getEventById = async (id) => {
-    const [rows] = await db.query('SELECT * FROM events WHERE id = ?', [id])
-    const event =  rows[0]
+    const event = await Event.getById(id)
 
-    const location = await locationService.getLocationById(event.location_id)
+    const location = await Location.getById(event.location_id)
 
-    if(!event.poster){
-        return {...event, location: location}
+    let poster_data = poster_data
+
+    if (event.poster_data){
+      const posterBuffer = event.poster_data
+      const posterBase64 = posterBuffer.toString('base64')
+      poster_data = `data:image/jpeg;base64,${posterBase64}`
     }
-    
-    // modify the poster
-    const posterBuffer = event.poster
-    const posterBase64 = posterBuffer.toString('base64')
 
-    const modifiedEvent = {...event, poster: `data:image/jpeg;base64,${posterBase64}`, location: location}
-    return modifiedEvent
+    return {
+        ...event,
+        poster_data: poster_data,
+        location: location
+    }
 }
 
 const createEvent = async (body) => {
     const requiredFields = [
-      "name", "description", "start_time", "end_time", "created_by"
+      "name", "description", "startTime", "endTime", "createdBy"
     ];
   
     for (const field of requiredFields) {
@@ -56,30 +58,39 @@ const createEvent = async (body) => {
   
     let locationId = body.locationId;
     if (!locationId) {
-      const locationMetadata = await locationService.createLocation(body.location);
+      const locationMetadata = await Location.create(body.location);
       locationId = locationMetadata.insertId;
     }
+
+    const{
+      name,
+      description,
+      startTime,
+      endTime,
+      needResume,
+      needMajor,
+      onCampus,
+      isColloquium,
+      createdBy,
+      posterData,
+      capacity
+    } = body
   
-    const [result] = await db.query(
-      `INSERT INTO events (name, description, location_id, start_time, end_time, need_resume, need_major, on_campus, is_colloquium, created_by, poster_data, capacity) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        body.name,
-        body.description,
-        locationId,
-        body.start_time,
-        body.end_time,
-        body.need_resume,
-        body.need_major,
-        body.on_campus,
-        body.is_colloquium,
-        body.created_by,
-        body.poster_data,
-        body.capacity,
-      ]
-    );
+    return await Event.create({
+      name,
+      description,
+      locationId,
+      startTime,
+      endTime,
+      needResume,
+      needMajor,
+      onCampus,
+      isColloquium,
+      createdBy,
+      posterData,
+      capacity
+    })
   
-    return result;
   };
 
 module.exports = {

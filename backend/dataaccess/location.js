@@ -5,18 +5,18 @@ const getAll = async () => {
     return rows
 }
 
-const getLocationById = async (id) => {
+const getById = async (id) => {
     const [rows] = await db.query('SELECT * FROM locations WHERE location_id = ?', [id])
     return rows[0]
 }
 
-const createLocation = async ({name, address, lat, lng, room}) => {
+const create = async ({name, address, lat, lng, room}) => {
     const [result] = await db.query('INSERT INTO locations (place_name, address, lat, lng, room) VALUES (?, ?, ?, ?, ?)', [name, address, lat, lng, room])
     return result
 }
 
 module.exports = {
     getAll,
-    getLocationById,
-    createLocation
+    getById,
+    create
 }

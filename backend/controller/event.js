@@ -45,12 +45,12 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             lat,
             lng,
             room,
-            start_time,
-            end_time,
-            need_resume,
-            need_major,
-            on_campus,
-            is_colloquium,
+            startTime,
+            endTime,
+            needResume,
+            needMajor,
+            onCampus,
+            isColloquium,
             capacity
         } = req.body;
     
@@ -65,14 +65,14 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             lng,
             room,
             },
-            start_time: start_time,
-            end_time: end_time,
-            need_resume: need_resume === "true",      // Convert strings to boolean
-            need_major: need_major === "true",
-            on_campus: on_campus === "true",
-            is_colloquium: is_colloquium === "true",
-            created_by: userId,
-            poster_data: req.file?.buffer || null,
+            startTime,
+            endTime,
+            needResume: needResume === "true",      // Convert strings to boolean
+            needMajor: needMajor === "true",
+            onCampus: onCampus === "true",
+            isColloquium: isColloquium === "true",
+            createdBy: userId,
+            posterData: req.file?.buffer || null,
             capacity: capacity || null,
         });
     

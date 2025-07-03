@@ -24,12 +24,12 @@ const createEvent = async (body) => {
     formData.append("lat", body.lat);
     formData.append("lng", body.lng);
     formData.append("room", body.room);
-    formData.append("start_time", formatDateTime(body.startTime));
-    formData.append("end_time", formatDateTime(body.endTime));
-    formData.append("need_resume", body.needResume);
-    formData.append("need_major", body.needMajor);
-    formData.append("on_campus", body.onCampus);
-    formData.append("is_colloquium", body.isColloquium);
+    formData.append("startTime", formatDateTime(body.startTime));
+    formData.append("endTime", formatDateTime(body.endTime));
+    formData.append("needResume", body.needResume);
+    formData.append("needMajor", body.needMajor);
+    formData.append("onCampus", body.onCampus);
+    formData.append("isColloquium", body.isColloquium);
     formData.append("capacity", body.isLimited ? body.capacity : "");
     if (body.poster) {
         formData.append("poster", body.poster); // name must match multer's field name
