@@ -9,17 +9,8 @@ studentRouter.get('/', async (req, res) => {
 studentRouter.get('/:email', async (req, res) => {
     try{
         const email = req.params.email
-        const student = studentService.getStudentByEmail(email)
-        if(student) {
-            res.status(200).json({
-                exist: true,
-                student: student
-            })
-        }else{
-            res.status(200).json({
-                exist: false
-            })
-        }
+        const getStudentByEmailResponse = studentService.getStudentByEmail(email)
+        res.status(200).json(getStudentByEmailResponse)
     }catch(e) {
         json.status(400).json({error: "Something went wrong!"})
     }
@@ -34,4 +25,6 @@ studentRouter.post('/', async (req, res) => {
         res.status(401).json({"error": e})
     }
 })
+
+module.exports = studentRouter
 

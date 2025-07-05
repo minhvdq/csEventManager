@@ -11,14 +11,15 @@ const userRouter = require('./controller/user')
 const eventRouter = require('./controller/event')
 const loginRouter = require('./controller/login')
 const locationRouter = require('./controller/location')
+const studentRouter = require('./controller/student')
+const eventRegisterRouter = require('./controller/eventRegister')
 
 const allowedOrigins = [
     'http://localhost:5173',   // Vite dev server
     'http://127.0.0.1:5173',   // Vite dev server alternative
     'http://localhost:3000',   // Production
     'http://127.0.0.1:3000',   // Production alternative
-    'https://rate-my-classes-gb.fly.dev' // Production domain
-];
+]
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -46,6 +47,8 @@ app.use('/api/users', userRouter)
 app.use('/api/events', eventRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/locations', locationRouter)
+app.use('/api/students', studentRouter)
+app.use('/api/eventRegister', eventRegisterRouter)
 
 // Error handling middleware should be last
 app.use(middlewares.unknownEndpoint)
