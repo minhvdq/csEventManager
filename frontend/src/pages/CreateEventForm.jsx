@@ -2,11 +2,11 @@ import { Select, Switch, Button, Form, Input, Spin, message} from 'antd';
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import AutoCompleteGGMap from './AutoCompleteGGMap';
-import location from '../../services/location';
+import AutoCompleteGGMap from '../components/event/AutoCompleteGGMap';
+import location from '../services/location';
 import axios from 'axios';
-import eventService from '../../services/event'
-import { backendBase, frontendBase } from '../../utils/homeUrl';
+import eventService from '../services/event'
+import { backendBase, frontendBase } from '../utils/homeUrl';
 
 const { Option } = Select; 
 

@@ -8,7 +8,7 @@ import Authentication from './pages/Authentication'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound';
 import Admin from './pages/Admin'
-import CreateEventForm from './components/event/CreateEventForm';
+import CreateEventForm from './pages/CreateEventForm';
 
 function App() {
   const [events, setEvents] = useState([])

@@ -82,7 +82,6 @@ export default function Home({ events, curUser, handleLogout }) {
     }, [events, search, term, year, sort, filter]);
 
     const handleClickCreateEvent = (e) => {
-        console.log("HEllo")
         e.preventDefault()
 
         window.location.href = `${frontendBase}/create`
