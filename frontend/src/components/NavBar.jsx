@@ -1,4 +1,5 @@
 import "./NavBar.css";
+import {Link} from 'react-router-dom'
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { frontendBase } from "../utils/homeUrl";
@@ -15,7 +16,7 @@ const Logo = () => (
     >
         <img
             className="logo-img"
-            src={`/cS-mug2.png`}
+            src={`${frontendBase}/cS-mug2.png`}
             alt="logo"
             height="60"
             style={{ borderRadius: "8px" }}
@@ -46,7 +47,7 @@ export default function NavBar({ curUser, handleLogout }) {
                             Logout
                         </a>
                         ) : (
-                        <a href={`${homeUrl}/authen`}>Login</a>
+                        <Link to='/authen'>Login</Link>
                         )}
                     </li>
                 </ul>
@@ -77,9 +78,9 @@ export default function NavBar({ curUser, handleLogout }) {
                                     Logout
                                 </a>
                                 ) : (
-                                <a href={`${homeUrl}/authen`} onClick={toggleMenu}>
+                                <Link to='/authen' onClick={toggleMenu}>
                                     Login
-                                </a>
+                                </Link>
                                 )}
                             </li>
                         </div>

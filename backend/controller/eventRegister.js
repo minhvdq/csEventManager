@@ -1,5 +1,9 @@
 const eventRegisterRouter = require('express').Router()
 const eventRegisterService = require('../service/eventRegisterService')
+const multer = require('multer')
+
+const storage = multer.memoryStorage()
+const upload = multer.apply({storage: storage})
 
 eventRegisterRouter.get('/', async (req, res) => {
     try{
@@ -30,25 +34,27 @@ eventRegisterRouter.get('/byEvent/:eventId', async (req, res) => {
     }
 })
 
-eventRegisterRouter.post('/newStudent', async (req, res) => {
+eventRegisterRouter.post('/newStudent', upload.single("resume"), async (req, res) => {
     try{
         const body = req.body
-        const registerResponse = await eventRegisterService.registerWithNewStudent(body)
-        if(registerResponse == null) {
-            res.status(200).send("Student already registered!")
-        }else{
-            res.status(201).json(registerResponse)
-        }
+        const resumeTitle = req.file?.originalname || null
+        const resume = req.file?.buffer || null
+
+        const registerResponse = await eventRegisterService.registerWithNewStudent({...body, resumeTitle: resumeTitle, resume: resume})
+        res.status(201).json(registerResponse)
         
     }catch(e) {
         res.status(400).json({error: e})
     }
 })
 
-eventRegisterRouter.post('/existingStudent', async (req, res) => {
+eventRegisterRouter.post('/existingStudent', upload.single("resume"), async (req, res) => {
     try{
         const body = req.body
-        const registerResponse = await eventRegisterService.registerWithExistingStudent(body)
+        const resumeTitle = req.file?.originalname || null
+        const resume = req.file?.buffer
+
+        const registerResponse = await eventRegisterService.registerWithExistingStudent({...body, resumeTitle: resumeTitle, resume: resume})
         if(registerResponse == null) {
             res.status(200).send("Student already registered!")
         }else{

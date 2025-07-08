@@ -46,7 +46,7 @@ export default function EventRegisterPage({event}) {
         return(
             <div>
                 <Form onFinish={handleEmailSubmit}>
-                    <Form.Item label="First Name" required>
+                    <Form.Item label="School Email" required>
                         <Input 
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -71,36 +71,42 @@ export default function EventRegisterPage({event}) {
                 <Form>
                     <Form.Item label="First Name" required>
                         <Input 
-                            onChange={() => {}}
+                            value={firstName}
+                            onChange={(e) => {setFirstName(e.target.value)}}
                         />
                     </Form.Item>
 
                     <Form.Item label="Last Name" required>
                         <Input 
-                            onChange={() => {}}
+                            value={lastName}
+                            onChange={(e) => {setLastName(e.target.value)}}
                         />
                     </Form.Item>
 
                     <Form.Item label="School ID" required>
                         <Input 
-                            onChange={() => {}}
+                            value={schoolId}
+                            onChange={(e) => {setSchoolId(e.target.value)}}
                         />
                     </Form.Item>
 
                     <Form.Item label="Class Year" required>
                         <Input 
-                            onChange={() => {}}
+                            value={classYear}
+                            onChange={(e) => setClassYear(e.target.value)}
                         />
                     </Form.Item>
 
                     <Form.Item label="Have you taken 216?" required>
                         <Input 
-                            onChange={() => {}}
+                            value={taken216}
+                            onChange={(e) => setTaken216(e.target.value)}
                         />
                     </Form.Item>
 
                     <Form.Item label="Upload your resume" required>
                         <Input 
+                            
                             onChange={() => {}}
                         />
                     </Form.Item>
@@ -115,7 +121,7 @@ export default function EventRegisterPage({event}) {
             <>
                 <Form>
                     <Form.Item>
-
+                        const
                     </Form.Item>
                 </Form>
             </>

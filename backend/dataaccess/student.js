@@ -54,7 +54,11 @@ const updateMajorStatus = async (studentId, taken216) => {
 }
 
 const updateResume = async (studentId, resumeTitle, resume) => {
+    if(!resumeTitle || !resume){
+        throw new Error("Missing data")
+    }
     const [updateRespone] = await db.query(`UPDATE students SET resume_title = ?, resume = ? WHERE id = ?`, [resumeTitle, resume, studentId])
+    return updateRespone
 }
 
 module.exports = {

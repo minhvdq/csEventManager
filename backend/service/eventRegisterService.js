@@ -50,7 +50,7 @@ const registerWithExistingStudent = async (body) => {
         eventId
     } = body 
 
-    if(taken216) {
+    if(taken216 != null) {
         await Student.updateMajorStatus(studentId,taken216)
     }
 

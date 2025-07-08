@@ -38,7 +38,7 @@ function App() {
     setCurUser(null)
   }
   return (
-    <BrowserRouter>
+    <BrowserRouter basename='/eventHub'>
       <Routes>
         <Route path='/' element={<Home events={ events } curUser={ curUser } setCurUser={setCurUser} handleLogout={handleLogout}/>} />
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>

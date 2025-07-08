@@ -21,49 +21,61 @@ const allowedOrigins = [
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://138.234.44.100',
+    'http://cs100.cc.gettysburg.edu'
 ];
+
+app.use((req, res, next) => {
+    req.corsRequestUrl = req.originalUrl;
+    next();
+});
 
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            const err = new Error(`Not allowed by CORS: Origin '${origin}' tried to access '${this.req?.corsRequestUrl || '[unknown endpoint]'}'`);
+            callback(err);
         }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     optionsSuccessStatus: 204,
 };
-
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(middlewares.requestLogger);
 app.use(middlewares.tokenExtractor);
 
 // === API Routes ===
-app.use('/api/users', userRouter);
-app.use('/api/events', eventRouter);
-app.use('/api/login', loginRouter);
-app.use('/api/locations', locationRouter);
-app.use('/api/students', studentRouter);
-app.use('/api/eventRegister', eventRegisterRouter);
+app.use('/eventHub/api/users', userRouter);
+app.use('/eventHub/api/events', eventRouter);
+app.use('/eventHub/api/login', loginRouter);
+app.use('/eventHub/api/locations', locationRouter);
+app.use('/eventHub/api/students', studentRouter);
+app.use('/eventHub/api/eventRegister', eventRegisterRouter);
 
 // === Serve Static Files ===
-app.use(express.static(path.join(__dirname, 'dist'), {
+app.use(
+  '/eventHub',
+  express.static(path.join(__dirname, 'dist'), {
     setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        } else if (filePath.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
+      if (filePath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (filePath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      }
     }
-}));
+  })
+);
 
-// === React SPA Fallback Route (Safe from path-to-regexp errors) ===
-// Matches only non-API, non-file routes
-app.get(/^\/(?!api|.*\..*).*/, (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+app.use('/eventHub', (req, res, next) => {
+  // If request looks like a file, let static middleware handle it
+  if (path.extname(req.path)) {
+    return next();
+  }
+  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
 });
 
 // === Error Handling Middleware (last!) ===

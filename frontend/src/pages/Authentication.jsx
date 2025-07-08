@@ -75,7 +75,7 @@ export default function Authentication({ curUser, setCurUser }) {
         {/* Left Panel */}
         <div className='col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-box'>
           <div className='featured-image mb-3'>
-            <img src='/gb-logo.png' className='img-fluid' style={{ width: "85%" }} />
+            <img src={`${frontendBase}/gb-logo.png`} className='img-fluid' style={{ width: "85%" }} />
           </div>
         </div>
 

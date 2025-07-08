@@ -1,5 +1,9 @@
 const studentRouter = require('express').Router()
 const studentService = require('../service/studentService')
+const multer = require('multer')
+
+const storage = multer.memoryStorage()
+const upload = multer({storage: storage})
 
 studentRouter.get('/', async (req, res) => {
     const students = await studentService.getAll()
@@ -16,10 +20,12 @@ studentRouter.get('/:email', async (req, res) => {
     }
 })
 
-studentRouter.post('/', async (req, res) => {
+studentRouter.post('/', upload.single('resume'), async (req, res) => {
     const body = req.body
     try{
-        const result = await studentService.createNewStudent(body)
+        const resumeTitle = req.file?.originalname || null
+        const resume = req.file?.buffer || null
+        const result = await studentService.createNewStudent({...body, resumeTitle: resumeTitle, resume: resume})
         res.status(201).json(result)
     }catch(e){
         res.status(401).json({"error": e})
