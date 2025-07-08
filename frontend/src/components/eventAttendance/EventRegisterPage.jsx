@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import { Select, Switch, Button, Form, Input, Spin, message} from 'antd';
 import studentService from '../../services/student';
+import ResumeUpload from './ResumeUploader';
 
 export default function EventRegisterPage({event}) {
     const [pageNumber, setPageNumber] = useState(1)
@@ -42,6 +43,11 @@ export default function EventRegisterPage({event}) {
         }
     }
 
+    const handlRegisterNewUser = async (e) => {
+        e.preventDefault()
+
+    }
+
     const EmailCheckForm = () => {
         return(
             <div>
@@ -63,7 +69,7 @@ export default function EventRegisterPage({event}) {
         const [schoolId, setSchoolId] = useState("")
         const [classYear, setClassYear] = useState("")
         const [taken216, setTaken216] = useState(null)
-        const [resumeTitle, setResumeTitel] = useState(null)
+        const [resumeTitle, setResumeTitle] = useState(null)
         const [resume, setResume] = useState(null)
 
         return(
@@ -105,10 +111,7 @@ export default function EventRegisterPage({event}) {
                     </Form.Item>
 
                     <Form.Item label="Upload your resume" required>
-                        <Input 
-                            
-                            onChange={() => {}}
-                        />
+                        <ResumeUpload setResume={setResume} setResumeTitle={setResumeTitle} />
                     </Form.Item>
                 </Form>
             </>

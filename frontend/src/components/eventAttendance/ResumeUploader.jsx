@@ -1,35 +1,51 @@
-export default function ResumeUploader({resume, setResume, resumeTitle, setResumeTitle}){
-    const [pdfFile, setPdfFile] = useState(null);
+import { useState } from 'react';
+import { Upload, Button, message } from 'antd';
+import { UploadOutlined, EyeOutlined } from '@ant-design/icons';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!pdfFile) {
-        alert("Please upload a PDF file.");
-        return;
+export default function ResumeUpload({ setResume, setResumeTitle }) {
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    const handleFileChange = (info) => {
+        const file = info.file.originFileObj;
+        if (file && file.type === 'application/pdf') {
+        setResume(file);
+        setResumeTitle(file.name);
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        } else {
+        message.error('Only PDF files are allowed.');
         }
+    };
 
-        const formData = new FormData();
-        formData.append('resume', pdfFile); // no need to send a separate title
-
-        try {
-        const res = await axios.post('http://localhost:3001/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-            alert('Upload successful!');
-        } catch (error) {
-            console.error(error);
-            alert('Upload failed.');
+    const handlePreview = () => {
+        if (previewUrl) {
+        window.open(previewUrl, '_blank');
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setPdfFile(e.target.files[0])}
-            />
-            <button type="submit">Upload PDF</button>
-        </form>
+        <div className="p-3 border rounded shadow-sm">
+        <h5 className="mb-3">Upload Resume (PDF)</h5>
+        <Upload
+            accept=".pdf"
+            showUploadList={false}
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+        >
+            <Button icon={<UploadOutlined />}>Select PDF</Button>
+        </Upload>
+
+        {previewUrl && (
+            <Button
+            icon={<EyeOutlined />}
+            className="mt-2 ms-2"
+            onClick={handlePreview}
+            type="default"
+            >
+            Preview
+            </Button>
+        )}
+        </div>
     );
 }
