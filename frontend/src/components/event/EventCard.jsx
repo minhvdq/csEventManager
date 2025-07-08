@@ -11,7 +11,8 @@ function getLocalTimeZoneAbbreviation(date = new Date()) {
   return zonePart?.value || "";
 }
 
-export default function EventCard({ event }) {
+// Accept onRegisterClick as a prop
+export default function EventCard({ event, onRegisterClick }) {
   const [showDescription, setShowDescription] = useState(false);
   const descriptionRef = useRef(null);
   const [descHeight, setDescHeight] = useState("0px");
@@ -52,12 +53,13 @@ export default function EventCard({ event }) {
 
   const handleDirect = () => {
     let url = "";
+    // **FIXED:** Corrected Google Maps URL generation
     if (lat && lng) {
-      url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      url = `https://maps.google.com/?q=${lat},${lng}`;
     } else if (address) {
-      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+      url = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
     } else {
-      alert("No location info available.");
+      message.info("No location information available for this event.");
       return;
     }
     window.open(url, "_blank");
@@ -173,6 +175,8 @@ export default function EventCard({ event }) {
                     borderRadius: "20px",
                     padding: "4px 16px"
                   }}
+                  // **MODIFIED:** onClick now triggers the registration page toggle
+                  onClick={onRegisterClick}
                 >
                   Register
                 </Button>

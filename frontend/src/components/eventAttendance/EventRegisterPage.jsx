@@ -1,141 +1,243 @@
-import {useState, useEffect} from 'react'
-import { Select, Switch, Button, Form, Input, Spin, message} from 'antd';
+import { useState, useEffect } from 'react';
+import { Select, Button, Form, Input, Spin, message, Card, Typography, InputNumber } from 'antd';
+import { CalendarOutlined, MailOutlined } from '@ant-design/icons';
 import studentService from '../../services/student';
+import eventRegisterService from '../../services/eventRegister';
 import ResumeUpload from './ResumeUploader';
 
-export default function EventRegisterPage({event}) {
-    const [pageNumber, setPageNumber] = useState(1)
-    const [curStudent, setCurStudent] = useState(null)
-    const [needUpdateResume, setNeedUpdateResume] = useState(false)
-    const [needUpdateMajor, setNeedUpdateMajor] = useState(false)
-    
-    const [email, setEmail] = useState("")
+const { Title, Text } = Typography;
+const { Option } = Select;
 
-    const curTime = Date.now()
+export default function EventRegisterPage({ event, togglePage }) {
+    const [form] = Form.useForm();
+    const [pageNumber, setPageNumber] = useState(1);
+    const [curStudent, setCurStudent] = useState(null);
+    const [needUpdateResume, setNeedUpdateResume] = useState(event.need_resume);
+    const [needUpdateMajor, setNeedUpdateMajor] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState("");
+
+    const resetFields = () => {
+        form.resetFields();
+        setEmail("");
+        setCurStudent(null);
+        setNeedUpdateMajor(false);
+        setNeedUpdateResume(event.need_resume);
+        setPageNumber(1);
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const curMonth = curTime.getMonth() + 1
-        const isNowFall = curMonth >= 7 && curMonth <= 12
-        if(!curStudent){
-            setNeedUpdateMajor(false)
-            return
+        if (!curStudent) {
+            setNeedUpdateMajor(false);
+            return;
         }
 
-        const studentLastUpdateMonth = curStudent.last_update.getMonth() + 1
-        const studentLastUpdateIsFall = studentLastUpdateMonth >= 7 && studentLastUpdateMonth <= 12
-        
-        if(curTime.getFullYear() == student.last_update.getFullYear()){
-            setNeedUpdateMajor(studentLastUpdateIsFall === isNowFall)
-        }else{
-            setNeedUpdateMajor(false)
+        const now = new Date();
+        const lastUpdate = new Date(curStudent.last_update);
+        const currentMonth = now.getMonth();
+        const lastUpdateMonth = lastUpdate.getMonth();
+
+        const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11; // July to December
+        const lastUpdateWasFall = lastUpdateMonth >= 6 && lastUpdateMonth <= 11;
+
+        if (now.getFullYear() > lastUpdate.getFullYear()) {
+            setNeedUpdateMajor(true);
+        } else {
+            setNeedUpdateMajor(isCurrentlyFall !== lastUpdateWasFall);
         }
-    }, [curStudent])
+    }, [curStudent]);
 
-    const handleEmailSubmit = async (e) => {
-        e.preventDefault()
-        
-        const checkStudentResponse = await studentService.getByEmail(email)
+    const handleEmailSubmit = async (values) => {
+        setLoading(true);
+        try {
+            const checkStudentResponse = await studentService.getByEmail(values.email);
+            setEmail(values.email);
 
-        if(!checkStudentResponse.exists){
-            setPageNumber(3)
-        }else{
-            setCurStudent(checkStudentResponse.student)
-            setPageNumber(2)
+            if (!checkStudentResponse.exists) {
+                setPageNumber(3);
+            } else {
+                const studentData = checkStudentResponse.student;
+                setCurStudent(studentData);
+                setPageNumber(2);
+
+                if (!needUpdateMajor && !needUpdateResume) {
+                    await handleRegisterExistingUser({eventId: event.event_id, studentId: studentData.id});
+                }
+            }
+        } catch (error) {
+            message.error(`Error: ${error.message || 'Could not find student'}`);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
-    const handlRegisterNewUser = async (e) => {
-        e.preventDefault()
+    const handleRegisterNewUser = async (values) => {
+        setLoading(true);
+        const body = {
+            eventId: event.event_id,
+            schoolEmail: email,
+            ...values,
+        };
 
-    }
+        try {
+            await eventRegisterService.registerForNewStudent(body);
+            message.success('Successfully registered for the event!');
+            resetFields();
+            togglePage();
+        } catch (e) {
+            message.error(`Registration failed: ${e.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const EmailCheckForm = () => {
-        return(
-            <div>
-                <Form onFinish={handleEmailSubmit}>
-                    <Form.Item label="School Email" required>
-                        <Input 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+    const handleRegisterExistingUser = async (values) => {
+        setLoading(true);
+        const body = {
+            eventId: event.event_id,
+            studentId: curStudent?.id,
+            ...values,
+        };
+
+        try {
+            await eventRegisterService.registerForExistingStudent(body);
+            message.success(`Successfully registered ${curStudent.firstName} for the event!`);
+            resetFields();
+            togglePage();
+        } catch (e) {
+            message.error(`Registration failed: ${e.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const EmailCheckForm = () => (
+        <Form form={form} onFinish={handleEmailSubmit} layout="vertical">
+            <Title level={4}>Register for {event.name}</Title>
+            <Text type="secondary" className="mb-4 d-block">Please enter your school email to begin.</Text>
+            <Form.Item
+                label="School Email"
+                name="email"
+                rules={[{ required: true, type: 'email', message: 'Please enter a valid school email' }]}
+            >
+                <Input prefix={<MailOutlined />} placeholder="your.name@gettysburg.edu" />
+            </Form.Item>
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block loading={loading}>
+                    Next
+                </Button>
+            </Form.Item>
+        </Form>
+    );
+
+    const RegisterNewUserForm = () => (
+        <Form form={form} onFinish={handleRegisterNewUser} layout="vertical">
+             <Title level={4}>Create Your Profile</Title>
+             <Text type="secondary" className="mb-4 d-block">We didn't find an account with that email. Please fill out your details.</Text>
+
+            <div className="row">
+                <div className="col-md-6">
+                    <Form.Item label="First Name" name="firstName" rules={[{ required: true }]}>
+                        <Input />
                     </Form.Item>
-                </Form>
+                </div>
+                <div className="col-md-6">
+                    <Form.Item label="Last Name" name="lastName" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                </div>
             </div>
-        )
-    }
 
-    const RegisterNewUserForm = () => {
-        const [firstName, setFirstName] = useState("")
-        const [lastName, setLastName] = useState("")
-        const [schoolId, setSchoolId] = useState("")
-        const [classYear, setClassYear] = useState("")
-        const [taken216, setTaken216] = useState(null)
-        const [resumeTitle, setResumeTitle] = useState(null)
-        const [resume, setResume] = useState(null)
+            <Form.Item label="School ID" name="schoolId" rules={[{ required: true }]}>
+                <Input />
+            </Form.Item>
 
-        return(
-            <>
-                <Form>
-                    <Form.Item label="First Name" required>
-                        <Input 
-                            value={firstName}
-                            onChange={(e) => {setFirstName(e.target.value)}}
-                        />
-                    </Form.Item>
+            <Form.Item 
+                label="Class Year" 
+                name="classYear" 
+                rules={[{ required: true, type: 'integer', message: 'Please enter a valid graduation year' }]}
+            >
+                <InputNumber 
+                    style={{ width: '100%' }} 
+                    placeholder="e.g., 2026" 
+                    min={new Date().getFullYear()} 
+                />
+            </Form.Item>
 
-                    <Form.Item label="Last Name" required>
-                        <Input 
-                            value={lastName}
-                            onChange={(e) => {setLastName(e.target.value)}}
-                        />
-                    </Form.Item>
+            <Form.Item label="Have you taken or are you currently taking CS216?" name="taken216" rules={[{ required: true, message: 'This field is required' }]}>
+                <Select>
+                    <Option value={true}>Yes</Option>
+                    <Option value={false}>No</Option>
+                </Select>
+            </Form.Item>
 
-                    <Form.Item label="School ID" required>
-                        <Input 
-                            value={schoolId}
-                            onChange={(e) => {setSchoolId(e.target.value)}}
-                        />
-                    </Form.Item>
+            <Form.Item label="Upload your resume" name="resume" required={event.need_resume}>
+                <ResumeUpload setResume={(file) => form.setFieldsValue({ resume: file })} setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })} />
+            </Form.Item>
+            
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block loading={loading}>
+                    Register
+                </Button>
+            </Form.Item>
+        </Form>
+    );
 
-                    <Form.Item label="Class Year" required>
-                        <Input 
-                            value={classYear}
-                            onChange={(e) => setClassYear(e.target.value)}
-                        />
-                    </Form.Item>
+    const RegisterExistingUserForm = () => (
+         <Form form={form} onFinish={handleRegisterExistingUser} layout="vertical">
+            <Title level={4}>Welcome back, {curStudent?.firstName}!</Title>
+            <Text type="secondary" className="mb-4 d-block">Please confirm or update your information below.</Text>
 
-                    <Form.Item label="Have you taken 216?" required>
-                        <Input 
-                            value={taken216}
-                            onChange={(e) => setTaken216(e.target.value)}
-                        />
-                    </Form.Item>
+            {needUpdateMajor && (
+                <Form.Item
+                    name="taken216"
+                    label={<span className="fw-bold"><CalendarOutlined className="me-1" /> Have you taken or are you currently taking CS 216?</span>}
+                    rules={[{ required: true, message: 'Please select an option' }]}
+                >
+                    <Select placeholder="Select an option">
+                        <Option value={true}>Yes</Option>
+                        <Option value={false}>No</Option>
+                    </Select>
+                </Form.Item>
+            )}
 
-                    <Form.Item label="Upload your resume" required>
-                        <ResumeUpload setResume={setResume} setResumeTitle={setResumeTitle} />
-                    </Form.Item>
-                </Form>
-            </>
-        )
-    }
+            {needUpdateResume && (
+                <Form.Item label="Update your resume" name="resume" required>
+                     <ResumeUpload setResume={(file) => form.setFieldsValue({ resume: file })} setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })} />
+                </Form.Item>
+            )}
 
-    const RegisterExistingUserForm = () => {
-        
-        return(
-            <>
-                <Form>
-                    <Form.Item>
-                        const
-                    </Form.Item>
-                </Form>
-            </>
-        )
-    }
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block loading={loading}>
+                    Complete Registration
+                </Button>
+            </Form.Item>
+        </Form>
+    );
 
-    return(
-        <div>
-            {pageNumber == 1 && <EmailCheckForm />}
-            {pageNumber == 2 && (needUpdateMajor || needUpdateResume) && <RegisterExistingUserForm />}
-            {pageNumber == 3 && <RegisterNewUserForm />}
+    return (
+        <div className="container mt-4">
+            <div className="row justify-content-center">
+                <div className="col-md-8 col-lg-6">
+                    <Spin spinning={loading}>
+                        <Card>
+                            {pageNumber === 1 && <EmailCheckForm />}
+                            {pageNumber === 2 && (needUpdateMajor || needUpdateResume) && <RegisterExistingUserForm />}
+                            {pageNumber === 3 && <RegisterNewUserForm />}
+
+                            {pageNumber !== 1 && (
+                                <Button className="mt-3" onClick={() => {
+                                    setPageNumber(1);
+                                    form.resetFields();
+                                }}>
+                                    Back
+                                </Button>
+                            )}
+                        </Card>
+                    </Spin>
+                </div>
+            </div>
         </div>
-    )
+    );
 }

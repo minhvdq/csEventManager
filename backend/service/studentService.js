@@ -8,7 +8,7 @@ const getStudentByEmail = async (email) => {
     const student = await Student.getByEmail(email)
     
     return {
-        exist: student ? true : false,
+        exists: student ? true : false,
         student: student
     }
 }

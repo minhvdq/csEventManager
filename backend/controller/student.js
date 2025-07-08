@@ -13,7 +13,7 @@ studentRouter.get('/', async (req, res) => {
 studentRouter.get('/:email', async (req, res) => {
     try{
         const email = req.params.email
-        const getStudentByEmailResponse = studentService.getStudentByEmail(email)
+        const getStudentByEmailResponse = await studentService.getStudentByEmail(email)
         res.status(200).json(getStudentByEmailResponse)
     }catch(e) {
         json.status(400).json({error: "Something went wrong!"})
@@ -28,7 +28,7 @@ studentRouter.post('/', upload.single('resume'), async (req, res) => {
         const result = await studentService.createNewStudent({...body, resumeTitle: resumeTitle, resume: resume})
         res.status(201).json(result)
     }catch(e){
-        res.status(401).json({"error": e})
+        res.status(401).json({error: e})
     }
 })
 

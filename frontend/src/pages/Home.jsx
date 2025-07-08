@@ -7,8 +7,8 @@ import {
   Spin
 } from "antd";
 import EventCard from "../components/event/EventCard";
+import EventRegisterPage from "../components/eventAttendance/EventRegisterPage";
 import NavBar from "../components/NavBar";
-import { Navigate } from "react-router-dom";
 import { frontendBase } from "../utils/homeUrl";
 
 const { Option } = Select;
@@ -25,6 +25,9 @@ export default function Home({ events, curUser, handleLogout }) {
     const [sort, setSort]                   = useState("Latest");
     const [filter, setFilter]               = useState("All");
     const [loading, setLoading]             = useState(false);
+    
+    // State to manage which event registration page is active
+    const [registeringEvent, setRegisteringEvent] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -80,85 +83,102 @@ export default function Home({ events, curUser, handleLogout }) {
 
         return () => clearTimeout(timeout);
     }, [events, search, term, year, sort, filter]);
+    
+    // Function to show or hide the registration page
+    const toggleRegisterPage = (event = null) => {
+        setRegisteringEvent(event);
+    };
 
     const handleClickCreateEvent = (e) => {
         e.preventDefault()
-
         window.location.href = `${frontendBase}/create`
     }
 
     return (
         <div className="bg-light min-vh-100">
-        <NavBar curUser={curUser} handleLogout={handleLogout}/>
-        <div className="container py-4">
-            {/* Filters */}
-            <div className="d-flex flex-wrap align-items-center mb-4 gap-3">
-            <Input
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{
-                flex: 1,
-                minWidth: "250px",
-                borderRadius: "20px",
-                paddingLeft: "20px",
-                height: "40px"
-                }}
-            />
-            <Select
-                value={term}
-                onChange={(value) => setTerm(value)}
-                style={{ width: 100, borderRadius: "20px" }}
-            >
-                <Option value="All">All</Option>
-                <Option value="Spring">Spring</Option>
-                <Option value="Fall">Fall</Option>
-            </Select>
-            <Select
-                value={year}
-                onChange={(value) => setYear(value)}
-                style={{ width: 120 }}
-            >
-                <Option value="All">All</Option>
-                {yearOptions.map((yearOption) => (
-                <Option key={yearOption} value={yearOption}>
-                    {yearOption}
-                </Option>
-                ))}
-            </Select>
-            <Select
-                value={sort}
-                onChange={(value) => setSort(value)}
-                style={{ width: 120 }}
-            >
-                <Option value="Latest">Latest</Option>
-                <Option value="Earliest">Earliest</Option>
-            </Select>
-            <Select
-                value={filter}
-                onChange={(value) => setFilter(value)}
-                style={{ width: 140 }}
-            >
-                <Option value="All">--All--</Option>
-                <Option value="Colloquium">Colloquium</Option>
-                <Option value="NoColloquium">No Colloquium</Option>
-            </Select>
-            <Button
-                type="primary"
-                style={{ borderRadius: "20px", background: "#5890F1" }}
-                onClick={handleClickCreateEvent}
-            >
-                New Event
-            </Button>
-            </div>
+            <NavBar curUser={curUser} handleLogout={handleLogout}/>
+            <div className="container py-4">
+                {registeringEvent ? (
+                    <EventRegisterPage 
+                        event={registeringEvent}
+                        togglePage={() => toggleRegisterPage(null)}
+                    />
+                ) : (
+                    <>
+                        {/* Filters */}
+                        <div className="d-flex flex-wrap align-items-center mb-4 gap-3">
+                        <Input
+                            placeholder="Search..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            style={{
+                            flex: 1,
+                            minWidth: "250px",
+                            borderRadius: "20px",
+                            paddingLeft: "20px",
+                            height: "40px"
+                            }}
+                        />
+                        <Select
+                            value={term}
+                            onChange={(value) => setTerm(value)}
+                            style={{ width: 100, borderRadius: "20px" }}
+                        >
+                            <Option value="All">All</Option>
+                            <Option value="Spring">Spring</Option>
+                            <Option value="Fall">Fall</Option>
+                        </Select>
+                        <Select
+                            value={year}
+                            onChange={(value) => setYear(value)}
+                            style={{ width: 120 }}
+                        >
+                            <Option value="All">All</Option>
+                            {yearOptions.map((yearOption) => (
+                            <Option key={yearOption} value={yearOption}>
+                                {yearOption}
+                            </Option>
+                            ))}
+                        </Select>
+                        <Select
+                            value={sort}
+                            onChange={(value) => setSort(value)}
+                            style={{ width: 120 }}
+                        >
+                            <Option value="Latest">Latest</Option>
+                            <Option value="Earliest">Earliest</Option>
+                        </Select>
+                        <Select
+                            value={filter}
+                            onChange={(value) => setFilter(value)}
+                            style={{ width: 140 }}
+                        >
+                            <Option value="All">--All--</Option>
+                            <Option value="Colloquium">Colloquium</Option>
+                            <Option value="NoColloquium">No Colloquium</Option>
+                        </Select>
+                        <Button
+                            type="primary"
+                            style={{ borderRadius: "20px", background: "#5890F1" }}
+                            onClick={handleClickCreateEvent}
+                        >
+                            New Event
+                        </Button>
+                        </div>
 
-            {/* Event List with Spinner */}
-            <Spin spinning={loading} tip="Loading events..." size="large">
-            {presentEvents.map((event) => (
-                <EventCard key={event.event_id} event={event} />
-            ))}
-            </Spin>
-        </div>
+                        {/* Event List with Spinner */}
+                        <Spin spinning={loading} tip="Loading events..." size="large">
+                        {presentEvents.map((event) => (
+                            <EventCard 
+                                key={event.event_id} 
+                                event={event} 
+                                onRegisterClick={() => toggleRegisterPage(event)}
+                            />
+                        ))}
+                        </Spin>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

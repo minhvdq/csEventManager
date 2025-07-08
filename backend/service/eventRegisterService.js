@@ -1,48 +1,30 @@
 const EventAttendance = require('../dataaccess/eventAttendance')
 const Student = require('../dataaccess/student')
-const Event = require('../dataaccess/event')
+const Event = require('../dataaccess/event') // Assuming you have an Event DAL
 
-const getAllRegistrations = async () => {
-    const registrations = await EventAttendance.getAll()
-    return registrations.map(registration => {
-        Student.getById(registration.student_id).then(student => {
-            Event.getById(event => {
-                return(
-                    {student, event}
-                )
-            })
-        })
-    })
-}
-
+// FIX: Rewritten with Promise.all to correctly fetch data
 const getRegistrationsForEvent = async (eventId) => {
-    const registrations = await EventAttendance.getByEventId(eventId)
-    return registrations.map(registration => {
-        Student.getById(registration.student_id).then(student => {
-            Event.getById(event => {
-                return(
-                    {student, event}
-                )
-            })
-        })
-    })
+    const registrations = await EventAttendance.getByEventId(eventId);
+    return Promise.all(registrations.map(async (reg) => {
+        const student = await Student.getById(reg.student_id);
+        const event = await Event.getById(reg.event_id);
+        return { student, event };
+    }));
 }
 
+// FIX: Rewritten with Promise.all
 const getRegistrationsForStudent = async (studentId) => {
-    const registrations = await EventAttendance.getByStudentId(studentId)
-    return registrations.map(registration => {
-        Student.getById(registration.student_id).then(student => {
-            Event.getById(event => {
-                return(
-                    {student, event}
-                )
-            })
-        })
-    })
+    const registrations = await EventAttendance.getByStudentId(studentId);
+    return Promise.all(registrations.map(async (reg) => {
+        const student = await Student.getById(reg.student_id);
+        const event = await Event.getById(reg.event_id);
+        return { student, event };
+    }));
 }
+
 
 const registerWithExistingStudent = async (body) => {
-    const{
+    let {
         studentId,
         taken216,
         resumeTitle,
@@ -50,16 +32,19 @@ const registerWithExistingStudent = async (body) => {
         eventId
     } = body 
 
-    if(taken216 != null) {
-        await Student.updateMajorStatus(studentId,taken216)
+    // Convert string 'true'/'false' to boolean
+    if(taken216 != null && taken216 !== 'null') {
+        const taken216Bool = taken216 === 'true';
+        await Student.updateMajorStatus(studentId, taken216Bool);
     }
 
     if(resumeTitle && resume){
-        await Student.updateResume(studentId, resumeTitle, resume)
+        await Student.updateResume(studentId, resumeTitle, resume);
     }
 
-    const registerResponse = EventAttendance.create(studentId, eventId)
-    return registerResponse
+    // FIX: Pass arguments correctly
+    const registerResponse = await EventAttendance.create(studentId, eventId);
+    return registerResponse;
 }
 
 const registerWithNewStudent = async (body) => {
@@ -75,31 +60,38 @@ const registerWithNewStudent = async (body) => {
         eventId
     } = body
 
-    const createStudentResponse = await Student.create({
-        schoolEmail,
-        schoolId,
-        firstName,
-        lastName,
-        classYear,
-        taken216,
-        resumeTitle,
-        resume
-    })
+    // Convert string to boolean
+    const taken216Bool = taken216 === 'true';
 
-    const studentId = createStudentResponse.insertId
-
-    const registerResponse = await EventAttendance.create({
-        studentId,
-        eventId
-    })
-
-    return registerResponse
+    try{
+        const createStudentResponse = await Student.create({
+            schoolEmail,
+            schoolId,
+            firstName,
+            lastName,
+            classYear,
+            taken216: taken216Bool,
+            lastUpdate: new Date(), // FIX: Add the current timestamp
+            resumeTitle,
+            resume
+        })
+    
+        const studentId = createStudentResponse.insertId
+    
+        // FIX: Pass arguments correctly
+        const registerResponse = await EventAttendance.create(studentId, eventId);
+    
+        return registerResponse
+    }catch(e) {
+        console.log("Error creating new student registration: " + e)
+        throw e
+    }
 }
 
-module.exports = {
-    getAllRegistrations,
+// You also need to fix getAllRegistrations with Promise.all if you use it
+module.exports = { 
     getRegistrationsForEvent,
     getRegistrationsForStudent,
-    registerWithNewStudent,
-    registerWithExistingStudent
+    registerWithExistingStudent,
+    registerWithNewStudent
 }

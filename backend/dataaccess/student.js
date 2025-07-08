@@ -28,7 +28,7 @@ const create = async (body) => {
         resume
     } = body
 
-    const [createResponse] = await db.query(`INSERT INTO students (school_email, school_id, first_name, last_name, class_year, taken_216, last_update, resume_title, resume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+    const [createResponse] = await db.query(`INSERT INTO students (school_email, school_id, first_name, last_name, class_year, taken_216, last_update, resume_title, resume) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
         schoolEmail,
         schoolId,
         firstName,
