@@ -32,17 +32,36 @@ const registerWithExistingStudent = async (body) => {
         eventId
     } = body 
 
+    console.log("Body is: " + JSON.stringify(body)) 
+
+    if(taken216 === "null" || taken216 === "undefined"){
+        taken216 = null
+    }
+
+    if( resumeTitle === "null" || resumeTitle === "undefined"){
+        resumeTitle = null
+    }
+
+    if( resume === "null" || resume === "undefined"){
+        resume = null
+    }
+
     // Convert string 'true'/'false' to boolean
-    if(taken216 != null && taken216 !== 'null') {
+    if(taken216) {
+        console.log("Processing taken 216")
         const taken216Bool = taken216 === 'true';
         await Student.updateMajorStatus(studentId, taken216Bool);
     }
 
     if(resumeTitle && resume){
+        console.log("Processing resume")
         await Student.updateResume(studentId, resumeTitle, resume);
     }
 
-    // FIX: Pass arguments correctly
+    const checkCurrentRegistrationExist = await EventAttendance.getByStdentIdAndEventId(studentId, eventId)
+    if(checkCurrentRegistrationExist){
+        return null
+    }
     const registerResponse = await EventAttendance.create(studentId, eventId);
     return registerResponse;
 }

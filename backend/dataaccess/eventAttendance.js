@@ -15,12 +15,21 @@ const getByStudentId = async (studentId) => {
     return rows
 }
 
-const create = async (studentId, eventId) => {
+const getByStdentIdAndEventId = async(studentId, eventId) => {
     const [rows] = await db.query(`SELECT * FROM event_attendance WHERE student_id = ? AND event_id = ?`, [studentId, eventId]);
-    
-    if(rows && rows.length > 0){
-        return null; // Already exists
+    if(rows && rows.length >= 1) {
+        return rows[0]
     }
+
+    return null
+}
+
+const create = async (studentId, eventId) => {
+    // const [rows] = await db.query(`SELECT * FROM event_attendance WHERE student_id = ? AND event_id = ?`, [studentId, eventId]);
+    
+    // if(rows && rows.length > 0){
+    //     return null; // Already exists
+    // }
 
     const [response] = await db.query(`INSERT INTO event_attendance (student_id, event_id) VALUES (?, ?)`,[
         studentId,
@@ -34,5 +43,6 @@ module.exports = {
     getAll,
     getByEventId,
     getByStudentId,
+    getByStdentIdAndEventId,
     create
 }

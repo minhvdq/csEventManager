@@ -12,8 +12,6 @@ export default function EventRegisterPage({ event, togglePage }) {
     const [form] = Form.useForm();
     const [pageNumber, setPageNumber] = useState(1);
     const [curStudent, setCurStudent] = useState(null);
-    const [needUpdateResume, setNeedUpdateResume] = useState(event.need_resume);
-    const [needUpdateMajor, setNeedUpdateMajor] = useState(false);
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState("");
 
@@ -21,32 +19,9 @@ export default function EventRegisterPage({ event, togglePage }) {
         form.resetFields();
         setEmail("");
         setCurStudent(null);
-        setNeedUpdateMajor(false);
-        setNeedUpdateResume(event.need_resume);
         setPageNumber(1);
         setLoading(false);
     };
-
-    useEffect(() => {
-        if (!curStudent) {
-            setNeedUpdateMajor(false);
-            return;
-        }
-
-        const now = new Date();
-        const lastUpdate = new Date(curStudent.last_update);
-        const currentMonth = now.getMonth();
-        const lastUpdateMonth = lastUpdate.getMonth();
-
-        const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11; // July to December
-        const lastUpdateWasFall = lastUpdateMonth >= 6 && lastUpdateMonth <= 11;
-
-        if (now.getFullYear() > lastUpdate.getFullYear()) {
-            setNeedUpdateMajor(true);
-        } else {
-            setNeedUpdateMajor(isCurrentlyFall !== lastUpdateWasFall);
-        }
-    }, [curStudent]);
 
     const handleEmailSubmit = async (values) => {
         setLoading(true);
@@ -59,10 +34,29 @@ export default function EventRegisterPage({ event, togglePage }) {
             } else {
                 const studentData = checkStudentResponse.student;
                 setCurStudent(studentData);
-                setPageNumber(2);
 
-                if (!needUpdateMajor && !needUpdateResume) {
-                    await handleRegisterExistingUser({eventId: event.event_id, studentId: studentData.id});
+                // Check for required updates immediately after fetching data
+                const now = new Date();
+                const lastUpdate = new Date(studentData.last_update);
+                const currentMonth = now.getMonth();
+                const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11; // July to December
+                const lastUpdateWasFall = lastUpdate.getMonth() >= 6 && lastUpdate.getMonth() <= 11;
+                const needsMajorUpdate = now.getFullYear() > lastUpdate.getFullYear() || isCurrentlyFall !== lastUpdateWasFall;
+                
+                const needsResumeDisplay = event.need_resume;
+
+                if (!needsMajorUpdate && !needsResumeDisplay) {
+                    // No updates needed, register immediately and close
+                    await eventRegisterService.registerForExistingStudent({
+                        eventId: event.event_id,
+                        studentId: studentData.id,
+                    });
+                    message.success(`Successfully registered ${studentData.firstName} for the event!`);
+                    resetFields();
+                    togglePage();
+                } else {
+                    // Updates are needed, show the form
+                    setPageNumber(2);
                 }
             }
         } catch (error) {
@@ -173,7 +167,10 @@ export default function EventRegisterPage({ event, togglePage }) {
             </Form.Item>
 
             <Form.Item label="Upload your resume" name="resume" required={event.need_resume}>
-                <ResumeUpload setResume={(file) => form.setFieldsValue({ resume: file })} setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })} />
+                <ResumeUpload 
+                    setResume={(file) => form.setFieldsValue({ resume: file })} 
+                    setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })}
+                />
             </Form.Item>
             
             <Form.Item>
@@ -184,12 +181,19 @@ export default function EventRegisterPage({ event, togglePage }) {
         </Form>
     );
 
-    const RegisterExistingUserForm = () => (
+    const RegisterExistingUserForm = ({ student }) => {
+        const now = new Date();
+        const lastUpdate = new Date(student.last_update);
+        const isCurrentlyFall = now.getMonth() >= 6 && now.getMonth() <= 11;
+        const lastUpdateWasFall = lastUpdate.getMonth() >= 6 && lastUpdate.getMonth() <= 11;
+        const needsMajorUpdate = now.getFullYear() > lastUpdate.getFullYear() || isCurrentlyFall !== lastUpdateWasFall;
+
+        return (
          <Form form={form} onFinish={handleRegisterExistingUser} layout="vertical">
-            <Title level={4}>Welcome back, {curStudent?.firstName}!</Title>
+            <Title level={4}>Welcome back, {student?.firstName}!</Title>
             <Text type="secondary" className="mb-4 d-block">Please confirm or update your information below.</Text>
 
-            {needUpdateMajor && (
+            {needsMajorUpdate && (
                 <Form.Item
                     name="taken216"
                     label={<span className="fw-bold"><CalendarOutlined className="me-1" /> Have you taken or are you currently taking CS 216?</span>}
@@ -202,9 +206,18 @@ export default function EventRegisterPage({ event, togglePage }) {
                 </Form.Item>
             )}
 
-            {needUpdateResume && (
-                <Form.Item label="Update your resume" name="resume" required>
-                     <ResumeUpload setResume={(file) => form.setFieldsValue({ resume: file })} setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })} />
+            {event.need_resume && (
+                <Form.Item 
+                    label="Your Resume" 
+                    name="resume" 
+                    help="Upload a new PDF to replace your existing one."
+                >
+                     <ResumeUpload 
+                        setResume={(file) => form.setFieldsValue({ resume: file })} 
+                        setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })}
+                        existingResumeTitle={student?.resume_title}
+                        existingResumeUrl={student?.resume}
+                    />
                 </Form.Item>
             )}
 
@@ -214,7 +227,7 @@ export default function EventRegisterPage({ event, togglePage }) {
                 </Button>
             </Form.Item>
         </Form>
-    );
+    )};
 
     return (
         <div className="container mt-4">
@@ -223,14 +236,11 @@ export default function EventRegisterPage({ event, togglePage }) {
                     <Spin spinning={loading}>
                         <Card>
                             {pageNumber === 1 && <EmailCheckForm />}
-                            {pageNumber === 2 && (needUpdateMajor || needUpdateResume) && <RegisterExistingUserForm />}
+                            {pageNumber === 2 && curStudent && <RegisterExistingUserForm student={curStudent} />}
                             {pageNumber === 3 && <RegisterNewUserForm />}
 
                             {pageNumber !== 1 && (
-                                <Button className="mt-3" onClick={() => {
-                                    setPageNumber(1);
-                                    form.resetFields();
-                                }}>
+                                <Button className="mt-3" onClick={resetFields}>
                                     Back
                                 </Button>
                             )}
