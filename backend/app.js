@@ -12,6 +12,7 @@ const loginRouter = require('./controller/login');
 const locationRouter = require('./controller/location');
 const studentRouter = require('./controller/student');
 const eventRegisterRouter = require('./controller/eventRegister');
+const authRouter = require('./controller/auth.route')
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/eventHub/api/login', loginRouter);
 app.use('/eventHub/api/locations', locationRouter);
 app.use('/eventHub/api/students', studentRouter);
 app.use('/eventHub/api/eventRegister', eventRegisterRouter);
+app.use('/eventHub/api/auth', authRouter)
 
 // === Serve Static Files ===
 app.use(
@@ -78,6 +80,14 @@ app.use('/eventHub', (req, res, next) => {
   }
   res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
 });
+
+app.use('/eventHub/PasswordReset', (req, res) => {
+  res.sendFile(path.join(__dirname, '/ui_assets/reset.html'))
+})
+
+app.use('/eventHub/PasswordResetRequest', (req, res) => {
+  res.sendFile(path.join(__dirname, '/ui_assets/request.html'))
+})
 
 // === Error Handling Middleware (last!) ===
 app.use(middlewares.unknownEndpoint);

@@ -2,14 +2,58 @@ const db = require('../utils/db')
 const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const {backendBase} = require('../utils/homeUrl')
+const mailService = require('../utils/email/sendEmail')
+const User = require('../dataaccess/user')
+const Token = require('../dataaccess/token')
 
-const requestVerifyEmail = async (email, event_id) => { 
-    await db.query(`DELETE FROM Token WHERE (email = ?, event_id = ?)`, [email, event_id])
+const bcryptSalt = process. env.BCRYPT_SALT;
+// const JWTSecret = process.env.SECRET;
+const clientURL = `${backendBase}/PasswordReset/ui_assets/index.html`;
 
-    const verifyToken = crypto.randomBytes(32).toString('hex')
-    const hashedToken = await bcrypt.hash(verifyToken, 10)
+const requestPasswordReset = async (email) => {
+    const user = await User.getByEmail( email );
+    if (!user) throw new Error("Email does not exist");
+  
+    let token = await Token.getByUserId(user.user_id);
+    if (token) await Token.deleteById(token.id);
+  
+    let resetToken = crypto.randomBytes(32).toString("hex");
+    const hash = await bcrypt.hash(resetToken, Number(bcryptSalt));
+  
+    await Token.create(user.user_id, hash)
+  
+    const link = `${clientURL}?token=${resetToken}&id=${user.user_id}`;
+  
+    mailService.sendEmail(
+      user.email,
+      "Password Reset Request",
+      {
+        name: user.first_name,
+        link: link,
+      },
+      "/templates/requestResetPassword.handlebars"
+    );
+    return { link };
+};
 
-    const savedTokenResponse = await db.query(`INSERT INTO Token (email, token, event_id) VALUES (?, ?, ?)`, [email, hashedToken, event_id])
-
-    const link = `${backendBase}/verify`
+const resetPassword = async (userId, token, password) => {
+    let passwordResetToken = await Token.getByUserId(userId);
+  
+    if (!passwordResetToken) {
+        throw new Error("Invalid or expired password reset token");
+    }
+  
+    console.log(passwordResetToken.token, token);
+  
+    const isValid = await bcrypt.compare(token, passwordResetToken.token);
+  
+    if (!isValid) {
+        throw new Error("Invalid or expired password reset token");
+    }
+  
+    const hash = await bcrypt.hash(password, Number(bcryptSalt));
+  
+    await User.updatePasswordById(hash, userId)
 }
+
+module.exports = {requestPasswordReset, resetPassword}

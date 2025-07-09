@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { frontendBase } from '../utils/homeUrl';
+import { backendBase, frontendBase } from '../utils/homeUrl';
 import { Navigate, useNavigate } from 'react-router-dom';
 import customStorage from '../utils/customStorage';
 import loginService from '../services/login';
