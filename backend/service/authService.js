@@ -45,9 +45,10 @@ const resetPassword = async (userId, token, password) => {
   
     console.log(passwordResetToken.token, token);
   
-    const isValid = await bcrypt.compare(token, passwordResetToken.token);
+    const isValid = await bcrypt.compare(passwordResetToken.token, token);
   
     if (!isValid) {
+        console.log("toke is not the same")
         throw new Error("Invalid or expired password reset token");
     }
   
