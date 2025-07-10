@@ -8,8 +8,7 @@ const getRegistrationsForEvent = async (eventId) => {
     const registrations = await EventAttendance.getByEventId(eventId);
     return Promise.all(registrations.map(async (reg) => {
         const student = await Student.getById(reg.student_id);
-        const event = await Event.getById(reg.event_id);
-        return { student, event };
+        return {...student, registered_at: reg.created_at};
     }));
 }
 
@@ -17,9 +16,8 @@ const getRegistrationsForEvent = async (eventId) => {
 const getRegistrationsForStudent = async (studentId) => {
     const registrations = await EventAttendance.getByStudentId(studentId);
     return Promise.all(registrations.map(async (reg) => {
-        const student = await Student.getById(reg.student_id);
         const event = await Event.getById(reg.event_id);
-        return { student, event };
+        return {...event, registered_at: reg.created_at};
     }));
 }
 

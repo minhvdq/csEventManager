@@ -4,9 +4,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import AutoCompleteGGMap from '../components/event/AutoCompleteGGMap';
 import location from '../services/location';
-import axios from 'axios';
 import eventService from '../services/event'
-import { backendBase, frontendBase } from '../utils/homeUrl';
+import { frontendBase } from '../utils/homeUrl';
 
 const { Option } = Select; 
 
@@ -16,6 +15,7 @@ export default function CreateEventForm({curUser}) {
     const [description, setDescription] = useState('');
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
+    const [deadline, setDeadline] = useState(new Date());
     const [locationId, setLocationId] = useState(null);
     const [locationName, setLocationName] = useState('');
     const [address, setAddress] = useState('');
@@ -41,6 +41,17 @@ export default function CreateEventForm({curUser}) {
         });
     }, [curUser]);
 
+    useEffect(() => {
+        setLoading(true)
+        if(deadline > startTime){
+            setDeadline(startTime)
+        }
+        if(endTime < startTime){
+            setEndTime(startTime)
+        }
+        setLoading(false)
+    }, [startTime])
+
     const handlePosterChange = (e) => {
         const selectedFile = e.target.files[0];
         if (selectedFile && selectedFile.type.startsWith('image/')) {
@@ -63,7 +74,14 @@ export default function CreateEventForm({curUser}) {
         setEndTime(date)
     }
 
-
+    const handleOnChangeDeadline = (date) => {
+        if(date > startTime){
+            const msg = "Deadline is currently after startTime"
+            message.error(msg)
+            return
+        }
+        setDeadline(date)
+    }
 
     const handleSubmit = async (values) => {
         const body = {
@@ -84,6 +102,7 @@ export default function CreateEventForm({curUser}) {
             isLimited,
             capacity,
             poster,
+            deadline
         };
       
         try {
@@ -159,6 +178,19 @@ export default function CreateEventForm({curUser}) {
                     <DatePicker
                         selected={endTime}
                         onChange={handleOnChangeEndTime}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
+                        dateFormat="MMMM d, yyyy h:mm aa"
+                        className="form-control"
+                    />
+                    </div>
+
+                    <div className="mb-3">
+                    <label className="form-label fw-bold" required>Deadline</label>
+                    <DatePicker
+                        selected={deadline}
+                        onChange={handleOnChangeDeadline}
                         showTimeSelect
                         timeFormat="HH:mm"
                         timeIntervals={15}

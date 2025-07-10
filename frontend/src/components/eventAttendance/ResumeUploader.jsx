@@ -5,12 +5,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const { Text } = Typography;
 
-export default function ResumeUpload({ setResume, setResumeTitle, existingResumeTitle, existingResumeUrl }) {
-    const [file, setFile] = useState(null); // Tracks the new file uploaded by the user
+export default function ResumeUpload({ setResume, existingResumeTitle, existingResumeUrl }) {
+    const [file, setFile] = useState(null);
     const [displayFileName, setDisplayFileName] = useState(null);
 
     useEffect(() => {
-        // Set the initial display name from props
         setDisplayFileName(existingResumeTitle || null);
     }, [existingResumeTitle]);
 
@@ -20,24 +19,20 @@ export default function ResumeUpload({ setResume, setResumeTitle, existingResume
             setFile(selectedFile);
             setDisplayFileName(selectedFile.name);
             setResume(selectedFile);
-            setResumeTitle(selectedFile.name);
         }
     };
     
     const handleRemove = () => {
         setFile(null);
         setDisplayFileName(null);
-        setResume(null);
-        setResumeTitle(null); 
+        setResume(null); 
     };
 
     const handlePreview = () => {
         if (file) {
-            // Case 1: Preview a NEW file the user just selected
             const newFileUrl = URL.createObjectURL(file);
-            window.open(newFileUrl);
+            window.open(newFileUrl, '_blank'); 
         } else if (existingResumeUrl) {
-            // Case 2: Preview the EXISTING resume using the Data URL from the backend
             window.open(existingResumeUrl, '_blank');
         } else {
             message.info("No resume is available for preview.");

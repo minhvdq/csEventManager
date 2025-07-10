@@ -32,6 +32,7 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
     const user = await userService.getUserById(userId)
 
     if(!user){
+        console.log("User does not exists")
         return res.status(400).json({error: "User does not exists"})
     }
 
@@ -51,7 +52,8 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             needMajor,
             onCampus,
             isColloquium,
-            capacity
+            capacity,
+            deadline
         } = req.body;
     
         const event = await eventService.createEvent({
@@ -74,6 +76,7 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             createdBy: userId,
             posterData: req.file?.buffer || null,
             capacity: capacity || null,
+            deadline: deadline
         });
     
         res.status(201).json(event);
@@ -82,6 +85,60 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
+
+eventRouter.put('/deadline/:id', async (req, res) => {
+    try{
+        const decodedToken = await jwt.decode(req.token, config.SECRET)
+
+        if(!decodedToken){
+            return res.status(400).json({error: "Invalid Token"})
+        }
+
+        const userId = decodedToken.id
+
+        const user = await userService.getUserById(userId)
+
+        if(!user){
+            console.log("User does not exists")
+            return res.status(400).json({error: "User does not exists"})
+        }
+
+        const { deadline } = req.body
+        const { id } = req.params
+        const response = await eventService.updateDeadline(deadline, id)
+        res.status(200).json(response)
+    }catch(error){
+        console.log("error: " + error.message)
+        res.status(400).json({message: error.message})
+    }
+})
+
+eventRouter.delete('/:id', async (req, res) => {
+    try{
+        const decodedToken = await jwt.decode(req.token, config.SECRET)
+
+        if(!decodedToken){
+            console.log("Invalid Token")
+            return res.status(400).json({error: "Invalid Token"})
+        }
+
+        const userId = decodedToken.id
+
+        const user = await userService.getUserById(userId)
+
+        if(!user){
+            console.log("User does not exists")
+            return res.status(400).json({error: "User does not exists"})
+        }
+
+        const { id } = req.params
+        const response = await eventService.deleteEventById(id)
+        res.status(200).json(response)
+    }catch(error){
+        console.log("error: " + error.message)
+        res.status(400).json({message: error.message})
+    }
+})
   
 
 module.exports = eventRouter

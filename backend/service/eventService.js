@@ -73,7 +73,8 @@ const createEvent = async (body) => {
       isColloquium,
       createdBy,
       posterData,
-      capacity
+      capacity,
+      deadline
     } = body
   
     return await Event.create({
@@ -88,13 +89,25 @@ const createEvent = async (body) => {
       isColloquium,
       createdBy,
       posterData,
-      capacity
+      capacity,
+      deadline
     })
   
-  };
+};
+
+const updateDeadline = async (deadline, eventId) => {
+  return await Event.updateDeadline(deadline, eventId)
+}
+
+const deleteEventById = async (eventId) => {
+  return await Event.deleteById(eventId)
+}
+
 
 module.exports = {
-    getAllEvents,
-    getEventById,
-    createEvent
+  getAllEvents,
+  getEventById,
+  createEvent, 
+  updateDeadline,
+  deleteEventById
 }

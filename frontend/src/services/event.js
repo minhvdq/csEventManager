@@ -26,6 +26,7 @@ const createEvent = async (body) => {
     formData.append("room", body.room);
     formData.append("startTime", formatDateTime(body.startTime));
     formData.append("endTime", formatDateTime(body.endTime));
+    formData.append("deadline", formatDateTime(body.deadline));
     formData.append("needResume", body.needResume);
     formData.append("needMajor", body.needMajor);
     formData.append("onCampus", body.onCampus);
@@ -44,18 +45,25 @@ const createEvent = async (body) => {
         }
     }
 
-    try {
-        console.log("Token is: " + token)
-        const response = await axios.post(`${backendBase}/api/events`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                "Authorization": token
-            },
-        });
-        return response
-    } catch (error) {
-        throw error
-    }
+    console.log("Token is: " + token)
+    const response = await axios.post(`${backendBase}/api/events`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": token
+        },
+    });
+    return response
+
+}
+
+const updateEvent = async (eventId, body) => {
+    const response = await axios.put(`${backendBase}/api/events/deadline/${eventId}`, {deadline:formatDateTime(body.deadline)}, {
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": token
+        },
+    });
+    return response
 }
 
 const getAll = async () => {
@@ -63,4 +71,13 @@ const getAll = async () => {
     return eventsObj.data
 }
 
-export default {getAll, createEvent, setToken}
+const deleteEvent = async (eventId) => {
+    const response = await axios.delete(`${backendBase}/api/events/${eventId}`, {
+        headers: {
+            "Authorization": token
+        },
+    });
+    return response
+}
+
+export default {getAll, createEvent, setToken, updateEvent, deleteEvent}
