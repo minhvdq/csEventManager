@@ -45,16 +45,18 @@ const resetPassword = async (userId, token, password) => {
   
     console.log(passwordResetToken.token, token);
   
-    const isValid = await bcrypt.compare(passwordResetToken.token, token);
+    const isValid = await bcrypt.compare(token, passwordResetToken.token);
   
     if (!isValid) {
-        console.log("toke is not the same")
+        console.log("token is not the same")
         throw new Error("Invalid or expired password reset token");
     }
   
     const hash = await bcrypt.hash(password, Number(bcryptSalt));
   
     await User.updatePasswordById(hash, userId)
+    await Token.deleteById(passwordResetToken.id)
+    return {message: "Password reset successfully"}
 }
 
 module.exports = {requestPasswordReset, resetPassword}
