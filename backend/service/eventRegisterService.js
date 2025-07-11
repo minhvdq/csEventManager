@@ -55,6 +55,7 @@ const registerWithExistingStudent = async (body) => {
 
         if(resumeTitle && resume){
             console.log("Processing resume")
+            console.log("resumeTitle: " + resumeTitle)
             await Student.updateResume(studentId, resumeTitle, resume);
         }
 

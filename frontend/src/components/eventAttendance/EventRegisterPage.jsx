@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, Button, Form, Input, Spin, message, Card, Typography, InputNumber } from 'antd';
 import { CalendarOutlined, MailOutlined } from '@ant-design/icons';
 import studentService from '../../services/student';
@@ -14,13 +14,11 @@ export default function EventRegisterPage({ event, togglePage }) {
     const [curStudent, setCurStudent] = useState(null);
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState("");
-    const [newResumeFile, setNewResumeFile] = useState(null);
 
     const resetFields = () => {
         form.resetFields();
         setEmail("");
         setCurStudent(null);
-        setNewResumeFile(null);
         setPageNumber(1);
         setLoading(false);
     };
@@ -37,16 +35,18 @@ export default function EventRegisterPage({ event, togglePage }) {
                 const studentData = checkStudentResponse.student;
                 setCurStudent(studentData);
 
+                // Check for required updates immediately after fetching data
                 const now = new Date();
                 const lastUpdate = new Date(studentData.last_update);
                 const currentMonth = now.getMonth();
-                const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11;
+                const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11; // July to December
                 const lastUpdateWasFall = lastUpdate.getMonth() >= 6 && lastUpdate.getMonth() <= 11;
                 const needsMajorUpdate = now.getFullYear() > lastUpdate.getFullYear() || isCurrentlyFall !== lastUpdateWasFall;
                 
                 const needsResumeDisplay = event.need_resume;
 
                 if (!needsMajorUpdate && !needsResumeDisplay) {
+                    // No updates needed, register immediately and close
                     await eventRegisterService.registerForExistingStudent({
                         eventId: event.event_id,
                         studentId: studentData.id,
@@ -55,6 +55,7 @@ export default function EventRegisterPage({ event, togglePage }) {
                     resetFields();
                     togglePage();
                 } else {
+                    // Updates are needed, show the form
                     setPageNumber(2);
                 }
             }
@@ -66,20 +67,12 @@ export default function EventRegisterPage({ event, togglePage }) {
     };
 
     const handleRegisterNewUser = async (values) => {
-        if (event.need_resume && !newResumeFile) {
-            message.error('A resume is required for this event. Please upload a PDF.');
-            return;
-        }
-
         setLoading(true);
         const body = {
             eventId: event.event_id,
             schoolEmail: email,
             ...values,
         };
-        if (newResumeFile) {
-            body.resume = newResumeFile;
-        }
 
         try {
             await eventRegisterService.registerForNewStudent(body);
@@ -94,20 +87,12 @@ export default function EventRegisterPage({ event, togglePage }) {
     };
 
     const handleRegisterExistingUser = async (values) => {
-        if (event.need_resume && !curStudent?.resume && !newResumeFile) {
-            message.error('A resume is required for this event. Please upload a new PDF.');
-            return;
-        }
-
         setLoading(true);
         const body = {
             eventId: event.event_id,
             studentId: curStudent?.id,
             ...values,
         };
-        if (newResumeFile) {
-            body.resume = newResumeFile;
-        }
 
         try {
             await eventRegisterService.registerForExistingStudent(body);
@@ -157,9 +142,11 @@ export default function EventRegisterPage({ event, togglePage }) {
                     </Form.Item>
                 </div>
             </div>
+
             <Form.Item label="School ID" name="schoolId" rules={[{ required: true }]}>
                 <Input />
             </Form.Item>
+
             <Form.Item 
                 label="Class Year" 
                 name="classYear" 
@@ -171,6 +158,7 @@ export default function EventRegisterPage({ event, togglePage }) {
                     min={new Date().getFullYear()} 
                 />
             </Form.Item>
+
             <Form.Item label="Have you taken or are you currently taking CS216?" name="taken216" rules={[{ required: true, message: 'This field is required' }]}>
                 <Select>
                     <Option value={true}>Yes</Option>
@@ -178,12 +166,12 @@ export default function EventRegisterPage({ event, togglePage }) {
                 </Select>
             </Form.Item>
 
-            <div className="mb-3">
-                <label className="form-label">{event.need_resume ? "Upload your resume (Required)" : "Upload your resume"}</label>
+            <Form.Item label="Upload your resume" name="resume" required={event.need_resume}>
                 <ResumeUpload 
-                    setResume={setNewResumeFile}
+                    setResume={(file) => form.setFieldsValue({ resume: file })} 
+                    setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })}
                 />
-            </div>
+            </Form.Item>
             
             <Form.Item>
                 <Button type="primary" htmlType="submit" block loading={loading}>
@@ -219,15 +207,18 @@ export default function EventRegisterPage({ event, togglePage }) {
             )}
 
             {event.need_resume && (
-                <div className="mb-3">
-                    <label className="form-label">Your Resume</label>
-                    <div className="form-text mb-2">Upload a new PDF to replace your existing one.</div>
-                    <ResumeUpload 
-                        setResume={setNewResumeFile}
+                <Form.Item 
+                    label="Your Resume" 
+                    name="resume" 
+                    help="Upload a new PDF to replace your existing one."
+                >
+                     <ResumeUpload 
+                        setResume={(file) => form.setFieldsValue({ resume: file })} 
+                        setResumeTitle={(title) => form.setFieldsValue({ resumeTitle: title })}
                         existingResumeTitle={student?.resume_title}
                         existingResumeUrl={student?.resume}
                     />
-                </div>
+                </Form.Item>
             )}
 
             <Form.Item>

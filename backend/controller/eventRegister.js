@@ -61,6 +61,8 @@ eventRegisterRouter.post('/existingStudent', upload.single("resume"), async (req
         const resumeTitle = req.file?.originalname || body.resumeTitle || null
         const resume = req.file?.buffer || null
 
+        console.log("resumeTitle: " + resumeTitle)
+
         const registerResponse = await eventRegisterService.registerWithExistingStudent({...body, resumeTitle: resumeTitle, resume: resume})
         if(registerResponse == null) {
             // It's better to send a clear message in a JSON object
