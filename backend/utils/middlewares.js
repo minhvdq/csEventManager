@@ -46,9 +46,32 @@ const tokenExtractor = async ( request, response, next) => {
 
 }
 
+const adminAuth = async ( req, res, next) => {
+  const decodedToken = await jwt.decode(req.token, config.SECRET)
+
+  if(!decodedToken){
+      return res.status(400).json({error: "Invalid Token"})
+  }
+
+  const userId = decodedToken.id
+
+  const user = await userService.getUserById(userId)
+
+  if(!user ){
+      console.log("User does not exists")
+      return res.status(400).json({error: "User does not exists"})
+  }
+
+  if(!user.is_admin){
+      return res.status(400).json({error: "User is not authorized!"})
+  }
+  next()
+}
+
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
-  tokenExtractor
+  tokenExtractor,
+  adminAuth
 }

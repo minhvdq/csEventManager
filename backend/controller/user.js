@@ -2,6 +2,7 @@ const userRouter = require('express').Router()
 const userService = require('../service/userService')
 
 userRouter.get('/', async (req, res) => {
+
     try{
         const users = await userService.getAllUsers()
         res.status(200).json(users)
@@ -11,16 +12,21 @@ userRouter.get('/', async (req, res) => {
 })
 
 userRouter.get('/:email', async (req, res) => {
-    email = req.params.email
-    const user = await userService.getUserByEmail(email)
-    res.status(200).json(user)
+    try{        
+        email = req.params.email
+        const responseUser = await userService.getUserByEmail(email)
+        res.status(200).json(responseUser)
+    }catch(error){
+        res.status(400).json({message: error.message})
+    }   
 })
 
 userRouter.post('/', async (req, res) => {
     const body = req.body
     try{
-        const user = await userService.createUser(body)
-        res.status(201).json(user)
+        
+        const createUserResponse = await userService.createUser(body)
+        res.status(201).json(createUserResponse)
     }catch(error){
         res.status(400).json({message: error.message})
     }

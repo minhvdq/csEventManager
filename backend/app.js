@@ -51,7 +51,7 @@ app.use(middlewares.requestLogger);
 app.use(middlewares.tokenExtractor);
 
 // === API Routes ===
-app.use('/eventHub/api/users', userRouter);
+app.use('/eventHub/api/users', middlewares.adminAuth, userRouter);
 app.use('/eventHub/api/events', eventRouter);
 app.use('/eventHub/api/login', loginRouter);
 app.use('/eventHub/api/locations', locationRouter);
