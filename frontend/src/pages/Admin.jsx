@@ -21,7 +21,7 @@ export default function Admin({ curUser, handleLogout }) {
         userService.setToken(curUser.token);
         userService.getAll()
             .then(initialUsers => {
-                console.log("initialUsers are " + JSON.stringify(initialUsers))
+                // console.log("initialUsers are " + JSON.stringify(initialUsers))
                 setUsers(initialUsers.filter(u => u.user_id !== curUser.user_id));
                 setLoading(false);
             })

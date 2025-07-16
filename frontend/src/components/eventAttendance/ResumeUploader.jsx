@@ -19,7 +19,7 @@ export default function ResumeUpload({ setResume, existingResumeTitle, existingR
 
     const handleFileChange = ({ file: selectedFile }) => {
         const raw = selectedFile.originFileObj || selectedFile;
-        console.log("raw: " + JSON.stringify(raw))
+        // console.log("raw: " + JSON.stringify(raw))
 
         if (raw?.type !== 'application/pdf') {
             message.error("Only PDF files are allowed.");

@@ -4,7 +4,7 @@ import {backendBase} from '../utils/homeUrl'
 const loginUrl = `${backendBase}/api/login`
 const login = async (logInfo) => {
     const response = await axios.post(loginUrl, logInfo)
-    console.log(response.data)
+    // console.log(response.data)
     return response.data
 }
 

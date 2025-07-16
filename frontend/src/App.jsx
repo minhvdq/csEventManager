@@ -25,7 +25,7 @@ function App() {
   useEffect(() => {
     eventService.getAll().then(fetchedEvents => {
         const data = fetchedEvents
-        console.log('events in database: ' + JSON.stringify(data))
+        // console.log('events in database: ' + JSON.stringify(data))
         setEvents(data)
     })
 
@@ -33,11 +33,11 @@ function App() {
     if(loggedUser){
       const lUser = JSON.parse(loggedUser)
 
-      console.log('cur user is ' + lUser)
+      // console.log('cur user is ' + lUser)
       setCurUser(lUser)
     }
 
-    console.log("current user is: " + curUser)
+    // console.log("current user is: " + curUser)
   }, [])
 
   const handleLogout = (event) => {

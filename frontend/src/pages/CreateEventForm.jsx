@@ -106,9 +106,9 @@ export default function CreateEventForm({curUser}) {
       
         try {
             eventService.setToken(curUser.token)
-            const result = await eventService.createEvent(body);
+            await eventService.createEvent(body);
             message.success("Event submitted successfully!");
-            console.log("Response:", result);
+            // console.log("Response:", result);
             window.location.href = frontendBase
         } catch (error) {
             message.error("Failed to submit event.");
@@ -332,7 +332,7 @@ export default function CreateEventForm({curUser}) {
                         danger
                         onClick={(e) => {
                             e.preventDefault()
-                            console.log("Cancel clicked");
+                            // console.log("Cancel clicked");
 
                             window.location.href = frontendBase
                         }}

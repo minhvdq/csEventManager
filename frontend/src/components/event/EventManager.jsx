@@ -22,8 +22,12 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
             .then(students => {
                 setAttendees(students);
             })
-            .catch(() => message.error("Failed to load attendees"))
-            .finally(() => setAttendeesLoading(false));
+            .catch(() => {
+                message.error("Failed to load attendees");
+            })
+            .finally(() => {
+                setAttendeesLoading(false);
+            });
     }, [event.event_id, curUser.token]);
 
     const handleOnChangeDeadline = (date) => {
@@ -43,10 +47,9 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 await eventService.deleteEvent(event.event_id);
                 message.success("Event deleted successfully");
                 togglePage();
-            } catch (error) { 
-                console.log("error is: " + error);
+            } catch {
                 message.error("Failed to delete event.");
-            } finally { 
+            } finally {
                 setLoading(false);
             }
         }
@@ -60,9 +63,9 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 await eventService.updateEvent(event.event_id, { deadline });
                 message.success("Deadline updated successfully");
                 togglePage();
-            } catch (error) { 
+            } catch {
                 message.error("Failed to update deadline");
-            } finally { 
+            } finally {
                 setLoading(false);
             }
         }
@@ -131,7 +134,7 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                     const blob = new Blob([new Uint8Array(resumeBuffer.data)], { type: 'application/pdf' });
                     const url = URL.createObjectURL(blob);
                     return <a href={url} download={record.resume_title || 'resume.pdf'}>Download PDF</a>;
-                } catch (e) {
+                } catch {
                     return 'Invalid Data';
                 }
             },
