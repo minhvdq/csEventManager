@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { backendBase, frontendBase } from '../utils/homeUrl';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import customStorage from '../utils/customStorage';
 import loginService from '../services/login';
+import { backendBase, frontendBase } from '../utils/homeUrl';
 
 export default function Authentication({ curUser, setCurUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -29,7 +29,6 @@ export default function Authentication({ curUser, setCurUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); 
 
     try {
       const logUser = await loginService.login({ email, password });
@@ -50,10 +49,7 @@ export default function Authentication({ curUser, setCurUser }) {
       }
     } catch (e) {
       console.error("Login error:", e);
-      setError("Wrong username or password");
-      setTimeout(() => {
-        setError(null);
-      }, 4000);
+      message.error("Wrong username or password");
     } finally {
       setLoading(false);
     }
@@ -75,7 +71,7 @@ export default function Authentication({ curUser, setCurUser }) {
         {/* Left Panel */}
         <div className='col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-box'>
           <div className='featured-image mb-3'>
-            <img src={`${frontendBase}/gb-logo.png`} className='img-fluid' style={{ width: "85%" }} />
+            <img src={`${frontendBase}/gb-logo.png`} className='img-fluid' style={{ width: "85%" }} alt="logo"/>
           </div>
         </div>
 
@@ -88,14 +84,6 @@ export default function Authentication({ curUser, setCurUser }) {
               </h2>
               <p className='text-center text-muted'>Sign in to continue your journey</p>
             </div>
-
-            {error && (
-              <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                {error}
-                <button type="button" className="btn-close" onClick={() => setError(null)}></button>
-              </div>
-            )}
 
             <form onSubmit={handleLogin} className="login-form">
               {/* Email */}

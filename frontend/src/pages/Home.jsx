@@ -12,7 +12,7 @@ const { Title } = Typography;
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - i);
 
-export default function Home({ events, curUser, handleLogout }) {
+export default function Home({ events, setEvents, curUser, handleLogout }) {
     const [presentEvents, setPresentEvents] = useState(events);
     const [search, setSearch] = useState("");
     const [term, setTerm] = useState("All");
@@ -87,6 +87,11 @@ export default function Home({ events, curUser, handleLogout }) {
         setManagingEvent(event);
     };
 
+    const handleDeleteEventLocal = (eventId) => {
+        setEvents(events.filter((event) => event.event_id !== eventId));
+        setPresentEvents(presentEvents.filter((event) => event.event_id !== eventId));
+    }
+    
     const handleClickCreateEvent = (e) => {
         e.preventDefault();
         window.location.href = `${frontendBase}/create`;
@@ -101,6 +106,7 @@ export default function Home({ events, curUser, handleLogout }) {
                         event={managingEvent}
                         togglePage={() => toggleManagePage(null)}
                         curUser={curUser}
+                        handleDeleteEventLocal={handleDeleteEventLocal}
                     />
                 ) : registeringEvent ? (
                     <EventRegisterPage 
@@ -175,6 +181,7 @@ export default function Home({ events, curUser, handleLogout }) {
                                     key={event.event_id} 
                                     event={event}
                                     curUser={curUser}
+                                    handleDeleteEventLocal={handleDeleteEventLocal}
                                     onRegisterClick={() => toggleRegisterPage(event)}
                                     onManageClick={() => toggleManagePage(event)}
                                 />

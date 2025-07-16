@@ -17,7 +17,6 @@ export default function CreateEventForm({curUser}) {
     const [endTime, setEndTime] = useState(new Date());
     const [deadline, setDeadline] = useState(new Date());
     const [locationId, setLocationId] = useState(null);
-    const [locationName, setLocationName] = useState('');
     const [address, setAddress] = useState('');
     const [lat, setLat] = useState(null);
     const [lng, setLng] = useState(null);
@@ -88,7 +87,7 @@ export default function CreateEventForm({curUser}) {
             name,
             description,
             locationId,
-            locationName,
+            locationName: values.locationName, // Use value from form
             address,
             lat,
             lng,
@@ -214,6 +213,7 @@ export default function CreateEventForm({curUser}) {
                         onChange={(value) => {
                         if (value === 'other') {
                             setLocationId(null);
+                            form.setFieldsValue({ locationName: '' }); // Clear the input when switching
                             return;
                         }
                         setLocationId(value);
@@ -232,12 +232,26 @@ export default function CreateEventForm({curUser}) {
 
                     {!locationId && (
                     <>
-                        <Form.Item label="New Location Name" required>
-                        <Input
-                            value={locationName}
-                            onChange={(e) => setLocationName(e.target.value)}
-                            className="form-control"
-                        />
+                        <Form.Item
+                            label="New Location Name"
+                            name="locationName"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Please enter a location name.',
+                                },
+                                {
+                                    validator: (_, value) => {
+                                        const isDuplicate = dbLocations.some(loc => loc.place_name.toLowerCase() === (value || '').toLowerCase());
+                                        if (isDuplicate) {
+                                            return Promise.reject(new Error('This location already exists. Please select it from the list.'));
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                },
+                            ]}
+                        >
+                            <Input className="form-control" />
                         </Form.Item>
 
                         <Form.Item label="Address">

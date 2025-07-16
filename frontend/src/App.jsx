@@ -48,7 +48,7 @@ function App() {
   return (
     <BrowserRouter basename='/eventHub'>
       <Routes>
-        <Route path='/' element={<Home events={ events } curUser={ curUser } setCurUser={setCurUser} handleLogout={handleLogout}/>} />
+        <Route path='/' element={<Home events={ events } setEvents={setEvents} curUser={ curUser } setCurUser={setCurUser} handleLogout={handleLogout}/>} />
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>
         <Route path='/admin' element={<Admin events={ events } curUser={ curUser } setCurUser={setCurUser}/>} />
         <Route path='/create' element={<CreateEventForm curUser={curUser}/>} />

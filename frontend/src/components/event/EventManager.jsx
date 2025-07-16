@@ -9,7 +9,7 @@ import eventRegisterService from '../../services/eventRegister';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
-export default function EventManager({ event, togglePage, curUser }) {
+export default function EventManager({ event, togglePage, curUser, handleDeleteEventLocal }) {
     const [loading, setLoading] = useState(false);
     const [attendeesLoading, setAttendeesLoading] = useState(false);
     const [deadline, setDeadline] = useState(new Date(event.deadline));
@@ -38,11 +38,13 @@ export default function EventManager({ event, togglePage, curUser }) {
         if (window.confirm("Are you sure you want to permanently delete this event?")) {
             setLoading(true);
             try {
+                handleDeleteEventLocal(event.event_id);
                 eventService.setToken(curUser.token);
                 await eventService.deleteEvent(event.event_id);
                 message.success("Event deleted successfully");
                 togglePage();
             } catch (error) { 
+                console.log("error is: " + error);
                 message.error("Failed to delete event.");
             } finally { 
                 setLoading(false);
@@ -74,7 +76,6 @@ export default function EventManager({ event, togglePage, curUser }) {
 
         const csvRows = [
             headers.join(','),
-            // FIX: Access properties directly on the attendee (att) object
             ...attendees.map(att => {
                 const row = [
                     att.first_name,
@@ -84,7 +85,6 @@ export default function EventManager({ event, togglePage, curUser }) {
                 ];
                 if (event.need_major) row.push(att.taken_216 ? 'Yes' : 'No');
                 if (event.need_resume) row.push(att.resume_title || 'N/A');
-                // FIX: Use the correct key for registration time
                 row.push(new Date(att.registered_at).toLocaleString());
                 
                 return row.map(field => `"${String(field || '').replace(/"/g, '""')}"`).join(',');
@@ -102,7 +102,6 @@ export default function EventManager({ event, togglePage, curUser }) {
         URL.revokeObjectURL(link.href);
     };
 
-    // FIX: dataIndex no longer needs the ['student', ...] nested path
     const attendeeColumns = [
         { title: 'First Name', dataIndex: 'first_name', key: 'first_name', sorter: (a, b) => a.first_name.localeCompare(b.first_name) },
         { title: 'Last Name', dataIndex: 'last_name', key: 'last_name', sorter: (a, b) => a.last_name.localeCompare(b.last_name) },
@@ -122,9 +121,8 @@ export default function EventManager({ event, togglePage, curUser }) {
     if (event.need_resume) {
         attendeeColumns.push({
             title: 'Resume',
-            dataIndex: 'resume', // We'll use the whole record in the render function
+            dataIndex: 'resume',
             key: 'resume',
-            // FIX: Handle the Buffer data by creating a downloadable Blob link
             render: (resumeBuffer, record) => {
                 if (!resumeBuffer || !resumeBuffer.data) {
                     return 'N/A';
@@ -142,7 +140,6 @@ export default function EventManager({ event, togglePage, curUser }) {
 
     attendeeColumns.push({
         title: 'Registered On',
-        // FIX: Use the correct dataIndex for the registration timestamp
         dataIndex: 'registered_at',
         key: 'registered_at',
         render: (date) => new Date(date).toLocaleString(),
@@ -158,7 +155,6 @@ export default function EventManager({ event, togglePage, curUser }) {
 
             <Tabs defaultActiveKey="1">
                 <TabPane tab="Settings" key="1">
-                    {/* Settings Tab Content... (remains the same) */}
                     <Title level={5}>Event Details</Title>
                     <Descriptions bordered column={1}>
                         <Descriptions.Item label="Starts">{new Date(event.start_time).toLocaleString()}</Descriptions.Item>
@@ -211,7 +207,6 @@ export default function EventManager({ event, togglePage, curUser }) {
                         columns={attendeeColumns}
                         dataSource={attendees}
                         loading={attendeesLoading}
-                        // FIX: Use the student's unique ID as the key
                         rowKey="id"
                         scroll={{ x: true }}
                     />

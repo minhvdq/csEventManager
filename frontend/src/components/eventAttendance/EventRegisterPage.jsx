@@ -35,18 +35,16 @@ export default function EventRegisterPage({ event, togglePage }) {
                 const studentData = checkStudentResponse.student;
                 setCurStudent(studentData);
 
-                // Check for required updates immediately after fetching data
                 const now = new Date();
                 const lastUpdate = new Date(studentData.last_update);
                 const currentMonth = now.getMonth();
-                const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11; // July to December
-                const lastUpdateWasFall = lastUpdate.getMonth() >= 6 && lastUpdate.getMonth() <= 11;
+                const isCurrentlyFall = currentMonth >= 6 && currentMonth <= 11;
+                const lastUpdateWasFall = lastUpdate.getMonth() >= 6 && lastUpdate.getMonth <= 11;
                 const needsMajorUpdate = now.getFullYear() > lastUpdate.getFullYear() || isCurrentlyFall !== lastUpdateWasFall;
                 
                 const needsResumeDisplay = event.need_resume;
 
                 if (!needsMajorUpdate && !needsResumeDisplay) {
-                    // No updates needed, register immediately and close
                     await eventRegisterService.registerForExistingStudent({
                         eventId: event.event_id,
                         studentId: studentData.id,
@@ -55,7 +53,6 @@ export default function EventRegisterPage({ event, togglePage }) {
                     resetFields();
                     togglePage();
                 } else {
-                    // Updates are needed, show the form
                     setPageNumber(2);
                 }
             }
@@ -106,9 +103,21 @@ export default function EventRegisterPage({ event, togglePage }) {
         }
     };
 
+    const getTitle = () => {
+        switch (pageNumber) {
+            case 1:
+                return `Register for ${event.name}`;
+            case 2:
+                return `Welcome back, ${curStudent?.firstName}!`;
+            case 3:
+                return 'Create Your Profile';
+            default:
+                return 'Register';
+        }
+    };
+
     const EmailCheckForm = () => (
         <Form form={form} onFinish={handleEmailSubmit} layout="vertical">
-            <Title level={4}>Register for {event.name}</Title>
             <Text type="secondary" className="mb-4 d-block">Please enter your school email to begin.</Text>
             <Form.Item
                 label="School Email"
@@ -127,7 +136,6 @@ export default function EventRegisterPage({ event, togglePage }) {
 
     const RegisterNewUserForm = () => (
         <Form form={form} onFinish={handleRegisterNewUser} layout="vertical">
-             <Title level={4}>Create Your Profile</Title>
              <Text type="secondary" className="mb-4 d-block">We didn't find an account with that email. Please fill out your details.</Text>
 
             <div className="row">
@@ -190,7 +198,6 @@ export default function EventRegisterPage({ event, togglePage }) {
 
         return (
          <Form form={form} onFinish={handleRegisterExistingUser} layout="vertical">
-            <Title level={4}>Welcome back, {student?.firstName}!</Title>
             <Text type="secondary" className="mb-4 d-block">Please confirm or update your information below.</Text>
 
             {needsMajorUpdate && (
@@ -235,6 +242,11 @@ export default function EventRegisterPage({ event, togglePage }) {
                 <div className="col-md-8 col-lg-6">
                     <Spin spinning={loading}>
                         <Card>
+                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                <Title level={4} className="mb-0">{getTitle()}</Title>
+                                <Button onClick={togglePage}>Cancel</Button>
+                            </div>
+                            
                             {pageNumber === 1 && <EmailCheckForm />}
                             {pageNumber === 2 && curStudent && <RegisterExistingUserForm student={curStudent} />}
                             {pageNumber === 3 && <RegisterNewUserForm />}
