@@ -7,6 +7,7 @@ userRouter.get('/', async (req, res) => {
         const users = await userService.getAllUsers()
         res.status(200).json(users)
     }catch(error){
+        console.log("error is: " + error)
         res.status(500).json({message: error.message})
     }
 })

@@ -52,6 +52,7 @@ function App() {
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>
         <Route path='/admin' element={<Admin events={ events } curUser={ curUser } setCurUser={setCurUser}/>} />
         <Route path='/create' element={<CreateEventForm curUser={curUser}/>} />
+        <Route path='/admin' element={<Admin curUser={curUser}/>} />
         <Route path='/test' element={<TestPage />} />
         <Route paht='*' element={<NotFound/>}/>
       </Routes>

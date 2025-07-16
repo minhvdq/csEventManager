@@ -1,5 +1,5 @@
 import "./NavBar.css";
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom';
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { frontendBase } from "../utils/homeUrl";
@@ -26,12 +26,12 @@ const Logo = () => (
 );
 
 export default function NavBar({ curUser, handleLogout }) {
-  const [showHamburger, setShowHamburger] = useState(false);
-  const toggleMenu = () => setShowHamburger(!showHamburger);
+    const [showHamburger, setShowHamburger] = useState(false);
+    const toggleMenu = () => setShowHamburger(!showHamburger);
 
     return (
         <header className="shadow-sm bg-white sticky-top">
-        {/* Desktop Nav */}
+            {/* Desktop Nav */}
             <nav
                 id="desktop-nav"
                 className="container py-3 d-flex justify-content-between align-items-center"
@@ -41,13 +41,19 @@ export default function NavBar({ curUser, handleLogout }) {
                     <li>
                         <a href={`${homeUrl}`}>Home</a>
                     </li>
+                    {/* Admin link for desktop */}
+                    {curUser && curUser.isAdmin && (
+                        <li>
+                            <Link to="/admin">Admin</Link>
+                        </li>
+                    )}
                     <li>
                         {curUser ? (
-                        <a onClick={handleLogout} style={{ cursor: "pointer" }}>
-                            Logout
-                        </a>
+                            <a onClick={handleLogout} style={{ cursor: "pointer" }}>
+                                Logout
+                            </a>
                         ) : (
-                        <Link to='/authen'>Login</Link>
+                            <Link to='/authen'>Login</Link>
                         )}
                     </li>
                 </ul>
@@ -72,15 +78,23 @@ export default function NavBar({ curUser, handleLogout }) {
                                     Home
                                 </a>
                             </li>
+                             {/* Admin link for mobile */}
+                            {curUser && curUser.isAdmin && (
+                                <li>
+                                    <Link to="/admin" onClick={toggleMenu}>
+                                        Admin
+                                    </Link>
+                                </li>
+                            )}
                             <li>
                                 {curUser ? (
-                                <a onClick={() => { toggleMenu(); handleLogout(); }} style={{ cursor: "pointer" }}>
-                                    Logout
-                                </a>
+                                    <a onClick={() => { toggleMenu(); handleLogout(); }} style={{ cursor: "pointer" }}>
+                                        Logout
+                                    </a>
                                 ) : (
-                                <Link to='/authen' onClick={toggleMenu}>
-                                    Login
-                                </Link>
+                                    <Link to='/authen' onClick={toggleMenu}>
+                                        Login
+                                    </Link>
                                 )}
                             </li>
                         </div>

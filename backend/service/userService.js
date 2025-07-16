@@ -1,10 +1,9 @@
-const db = require('../utils/db')
 const User = require('../dataaccess/user')
 const bcrypt = require('bcrypt')
 const saltRounds = 10
 
 const getAllUsers = async () => {
-    return await User.getAll
+    return await User.getAll()
 }
 
 const getUserById = async (id) => {
