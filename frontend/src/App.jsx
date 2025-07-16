@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { backendBase, frontendBase } from './utils/homeUrl'
 import customStorage from './utils/customStorage';
 import eventService from './services/event'
 
@@ -37,7 +38,7 @@ function App() {
     console.log("Hello World")
     window.localStorage.removeItem("localUser")
     setCurUser(null)
-    window.location.href = '/'
+    window.location.href = frontendBase
   }
   return (
     <BrowserRouter basename='/eventHub'>
