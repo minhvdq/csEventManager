@@ -1,5 +1,6 @@
 const Event = require('../dataaccess/event')
 const Location = require('../dataaccess/location')
+const EventAttendance = require('../dataaccess/eventAttendance')
 
 const getAllEvents = async () => {
     const events = await Event.getAll()
@@ -100,6 +101,7 @@ const updateDeadline = async (deadline, eventId) => {
 }
 
 const deleteEventById = async (eventId) => {
+  await EventAttendance.deleteByEventId(eventId)
   return await Event.deleteById(eventId)
 }
 

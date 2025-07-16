@@ -1,4 +1,5 @@
 const Student = require('../dataaccess/student');
+const EventAttendance = require('../dataaccess/eventAttendance');
 
 /**
  * Transforms a student's raw resume buffer into a Base64 Data URL.
@@ -51,8 +52,14 @@ const createStudent = async (body) => {
   return await Student.create(body);
 };
 
+const deleteById = async (studentId) => {
+  await EventAttendance.deleteByStudentId(studentId)
+  return await Student.deleteById(studentId)
+}
+
 module.exports = {
   getAll,
   getStudentByEmail,
   createStudent,
+  deleteById
 };

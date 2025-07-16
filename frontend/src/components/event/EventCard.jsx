@@ -139,8 +139,8 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                                 </Tag>
                                 <br/>
                                 <Space>
-                                    {event.is_colloquium && <Tag color="purple">Colloquium</Tag>}
-                                    {event.on_campus && <Tag color="blue">On Campus</Tag>}
+                                    {event.is_colloquium == 1&& <Tag color="purple">Colloquium</Tag>}
+                                    {event.on_campus ==1 && <Tag color="blue">On Campus</Tag>}
                                 </Space>
                             </Space>
 
@@ -181,7 +181,7 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                                         Register
                                     </Button>
                                 )}
-                                {curUser?.isAdmin && (
+                                {curUser && (
                                     <Button
                                         style={{
                                             borderRadius: "20px",

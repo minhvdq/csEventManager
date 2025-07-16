@@ -39,10 +39,22 @@ const create = async (studentId, eventId) => {
     return response;
 }
 
+const deleteByEventId = async (eventId) => {
+    const [response] = await db.query(`DELETE FROM event_attendance WHERE event_id = ?`, [eventId]);
+    return response;
+}
+
+const deleteByStudentId = async (studentId) => {
+    const [response] = await db.query(`DELETE FROM event_attendance WHERE student_id = ?`, [studentId]);
+    return response;
+}
+
 module.exports = {
     getAll,
     getByEventId,
     getByStudentId,
     getByStdentIdAndEventId,
-    create
+    create,
+    deleteByEventId,
+    deleteByStudentId
 }
