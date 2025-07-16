@@ -46,9 +46,10 @@ export default function Admin({ curUser, handleLogout }) {
     const handleCreateUser = async (newUserObject) => {
         try {
             const returnedUser = await userService.createUser(newUserObject);
-            setUsers(users.concat(returnedUser));
+            // setUsers(users.concat(returnedUser));
             setShowCreateForm(false);
             message.success(`New user ${returnedUser.email} created successfully!`);
+            window.location.reload()
         } catch (error) {
             const errorMsg = error.response?.data?.error || "Failed to create user.";
             console.error("Failed to create user:", error);
@@ -58,12 +59,6 @@ export default function Admin({ curUser, handleLogout }) {
 
     // Define columns for the Ant Design Table
     const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'user_id',
-            key: 'user_id',
-            sorter: (a, b) => a.user_id - b.user_id,
-        },
         {
             title: 'First Name',
             dataIndex: 'first_name',
@@ -92,8 +87,8 @@ export default function Admin({ curUser, handleLogout }) {
                 </Tag>
             ),
             filters: [
-                { text: 'Admin', value: true },
-                { text: 'User', value: false },
+                { text: 'Admin', value: 1 },
+                { text: 'User', value: 0 },
             ],
             onFilter: (value, record) => record.is_admin === value,
         },

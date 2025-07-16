@@ -42,17 +42,18 @@ function App() {
 
   const handleLogout = (event) => {
     event.preventDefault()
+    console.log("Hello World")
     window.localStorage.removeItem("localUser")
     setCurUser(null)
+    window.location.href = '/'
   }
   return (
     <BrowserRouter basename='/eventHub'>
       <Routes>
         <Route path='/' element={<Home events={ events } setEvents={setEvents} curUser={ curUser } setCurUser={setCurUser} handleLogout={handleLogout}/>} />
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>
-        <Route path='/admin' element={<Admin events={ events } curUser={ curUser } setCurUser={setCurUser}/>} />
         <Route path='/create' element={<CreateEventForm curUser={curUser}/>} />
-        <Route path='/admin' element={<Admin curUser={curUser}/>} />
+        <Route path='/admin' element={<Admin curUser={curUser} handleLogout={handleLogout}/>} />
         <Route path='/test' element={<TestPage />} />
         <Route paht='*' element={<NotFound/>}/>
       </Routes>

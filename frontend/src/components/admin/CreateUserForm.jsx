@@ -22,7 +22,7 @@ export default function CreateUserForm({ handleCreateUser, onCancel }) {
                 form={form}
                 layout="vertical"
                 onFinish={onFinish}
-                initialValues={{ is_admin: false }} // Default is_admin to false
+                initialValues={{ isAdmin: false }} // This now correctly matches the Form.Item name
             >
                 <Form.Item name="firstName" label="First Name">
                     <Input placeholder="e.g. Jane" />
@@ -52,7 +52,7 @@ export default function CreateUserForm({ handleCreateUser, onCancel }) {
                 </Form.Item>
                 
                 <Form.Item
-                    name="isAdmin"
+                    name="isAdmin" // Changed to match the database schema and initialValues
                     label="Make Administrator"
                     valuePropName="checked"
                 >

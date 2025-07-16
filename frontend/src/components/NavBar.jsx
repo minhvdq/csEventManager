@@ -42,7 +42,7 @@ export default function NavBar({ curUser, handleLogout }) {
                         <a href={`${homeUrl}`}>Home</a>
                     </li>
                     {/* Admin link for desktop */}
-                    {curUser && curUser.isAdmin && (
+                    {curUser && curUser.isAdmin == 1 && (
                         <li>
                             <Link to="/admin">Admin</Link>
                         </li>
