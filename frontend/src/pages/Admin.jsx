@@ -95,17 +95,25 @@ export default function Admin({ curUser, handleLogout }) {
         {
             title: 'Actions',
             key: 'actions',
-            render: (text, record) => (
-                <Popconfirm
-                    title="Delete the user"
-                    description={`Are you sure you want to delete ${record.email}?`}
-                    onConfirm={() => handleDeleteUser(record.user_id, record.email)}
-                    okText="Yes"
-                    cancelText="No"
-                >
-                    <Button type="primary" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
-            ),
+            render: (text, record) => {
+                // If the user in this row is the current admin, return null.
+                if (record.email === curUser.email) {
+                    return null;
+                }
+        
+                // Otherwise, return the delete button as before.
+                return (
+                    <Popconfirm
+                        title="Delete the user"
+                        description={`Are you sure you want to delete ${record.email}?`}
+                        onConfirm={() => handleDeleteUser(record.user_id, record.email)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button type="primary" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                );
+            },
         },
     ];
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { backendBase, frontendBase } from './utils/homeUrl'
+import { frontendBase } from './utils/homeUrl'
 import customStorage from './utils/customStorage';
 import eventService from './services/event'
 
