@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Input, Select, Button, Typography, Spin } from "antd";
 import EventCard from "../components/event/EventCard";
 import EventRegisterPage from "../components/eventAttendance/EventRegisterPage";
-import EventManager from "../components/event/EventManager"
+import EventManager from "../components/event/EventManager";
 import NavBar from "../components/NavBar";
 import { frontendBase } from "../utils/homeUrl";
 
@@ -11,6 +11,12 @@ const { Title } = Typography;
 
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - i);
+
+const parseMySqlDateTimeAsLocal = (dateTimeString) => {
+    if (!dateTimeString) return null;
+    const localDateTimeString = dateTimeString.slice(0, 19).replace('T', ' ');
+    return new Date(localDateTimeString);
+};
 
 export default function Home({ events, setEvents, curUser, handleLogout }) {
     const [presentEvents, setPresentEvents] = useState(events);
@@ -26,52 +32,46 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
 
     useEffect(() => {
         setLoading(true);
-
         const timeout = setTimeout(() => {
             let filteredEvents = [...events];
 
-            // Filter by search
             if (search.trim()) {
                 filteredEvents = filteredEvents.filter((event) =>
                     event.name.toLowerCase().includes(search.toLowerCase())
                 );
             }
 
-            // Filter by colloquium
             if (filter === "Colloquium") {
                 filteredEvents = filteredEvents.filter((event) => event.is_colloquium);
             } else if (filter === "NoColloquium") {
                 filteredEvents = filteredEvents.filter((event) => !event.is_colloquium);
             }
 
-            // Filter by year
             if (year !== "All") {
-                filteredEvents = filteredEvents.filter(
-                    (event) =>
-                        new Date(event.start_time).getFullYear().toString() === year.toString()
-                );
+                filteredEvents = filteredEvents.filter(event => {
+                    const eventYear = parseMySqlDateTimeAsLocal(event.start_time)?.getFullYear();
+                    return eventYear?.toString() === year.toString();
+                });
             }
 
-            // Filter by term (Spring/Fall)
             if (term === "Spring") {
                 filteredEvents = filteredEvents.filter((event) => {
-                    const month = new Date(event.start_time).getMonth() + 1;
+                    const month = parseMySqlDateTimeAsLocal(event.start_time)?.getMonth() + 1;
                     return month >= 1 && month <= 6;
                 });
             } else if (term === "Fall") {
                 filteredEvents = filteredEvents.filter((event) => {
-                    const month = new Date(event.start_time).getMonth() + 1;
+                    const month = parseMySqlDateTimeAsLocal(event.start_time)?.getMonth() + 1;
                     return month >= 7 && month <= 12;
                 });
             }
 
-            // Sort
             filteredEvents.sort((a, b) => {
-                const aTime = new Date(a.start_time).getTime();
-                const bTime = new Date(b.start_time).getTime();
+                const aTime = parseMySqlDateTimeAsLocal(a.start_time)?.getTime() || 0;
+                const bTime = parseMySqlDateTimeAsLocal(b.start_time)?.getTime() || 0;
                 return sort === "Latest" ? bTime - aTime : aTime - bTime;
             });
-
+            console.log("filteredEvents are: " + JSON.stringify(filteredEvents))
             setPresentEvents(filteredEvents);
             setLoading(false);
         }, 300);
@@ -89,7 +89,6 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
 
     const handleDeleteEventLocal = (eventId) => {
         setEvents(events.filter((event) => event.event_id !== eventId));
-        setPresentEvents(presentEvents.filter((event) => event.event_id !== eventId));
     }
     
     const handleClickCreateEvent = (e) => {
@@ -128,60 +127,34 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
                                     height: "40px"
                                 }}
                             />
-                            <Select
-                                value={term}
-                                onChange={(value) => setTerm(value)}
-                                style={{ width: 100, borderRadius: "20px" }}
-                            >
+                            <Select value={term} onChange={setTerm} style={{ width: 100, borderRadius: "20px" }}>
                                 <Option value="All">All</Option>
                                 <Option value="Spring">Spring</Option>
                                 <Option value="Fall">Fall</Option>
                             </Select>
-                            <Select
-                                value={year}
-                                onChange={(value) => setYear(value)}
-                                style={{ width: 120 }}
-                            >
+                            <Select value={year} onChange={setYear} style={{ width: 120 }}>
                                 <Option value="All">All</Option>
-                                {yearOptions.map((yearOption) => (
-                                    <Option key={yearOption} value={yearOption}>
-                                        {yearOption}
-                                    </Option>
-                                ))}
+                                {yearOptions.map((y) => <Option key={y} value={y}>{y}</Option>)}
                             </Select>
-                            <Select
-                                value={sort}
-                                onChange={(value) => setSort(value)}
-                                style={{ width: 120 }}
-                            >
+                            <Select value={sort} onChange={setSort} style={{ width: 120 }}>
                                 <Option value="Latest">Latest</Option>
                                 <Option value="Earliest">Earliest</Option>
                             </Select>
-                            <Select
-                                value={filter}
-                                onChange={(value) => setFilter(value)}
-                                style={{ width: 140 }}
-                            >
+                            <Select value={filter} onChange={setFilter} style={{ width: 140 }}>
                                 <Option value="All">--All--</Option>
                                 <Option value="Colloquium">Colloquium</Option>
                                 <Option value="NoColloquium">No Colloquium</Option>
                             </Select>
-                            <Button
-                                type="primary"
-                                style={{ borderRadius: "20px", background: "#5890F1" }}
-                                onClick={handleClickCreateEvent}
-                            >
+                            <Button type="primary" onClick={handleClickCreateEvent} style={{ borderRadius: "20px", background: "#5890F1" }}>
                                 New Event
                             </Button>
                         </div>
-
                         <Spin spinning={loading} tip="Loading events..." size="large">
                             {presentEvents.map((event) => (
                                 <EventCard 
                                     key={event.event_id} 
                                     event={event}
                                     curUser={curUser}
-                                    handleDeleteEventLocal={handleDeleteEventLocal}
                                     onRegisterClick={() => toggleRegisterPage(event)}
                                     onManageClick={() => toggleManagePage(event)}
                                 />

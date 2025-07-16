@@ -9,11 +9,20 @@ import eventRegisterService from '../../services/eventRegister';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
+const parseMySqlDateTimeAsLocal = (dateTimeString) => {
+    if (!dateTimeString) return null;
+    const localDateTimeString = dateTimeString.slice(0, 19).replace('T', ' ');
+    return new Date(localDateTimeString);
+};
+
 export default function EventManager({ event, togglePage, curUser, handleDeleteEventLocal }) {
     const [loading, setLoading] = useState(false);
     const [attendeesLoading, setAttendeesLoading] = useState(false);
-    const [deadline, setDeadline] = useState(new Date(event.deadline));
+    const [deadline, setDeadline] = useState(parseMySqlDateTimeAsLocal(event.deadline));
     const [attendees, setAttendees] = useState([]);
+
+    const eventStartTime = parseMySqlDateTimeAsLocal(event.start_time);
+    const eventEndTime = parseMySqlDateTimeAsLocal(event.end_time);
 
     useEffect(() => {
         setAttendeesLoading(true);
@@ -22,16 +31,12 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
             .then(students => {
                 setAttendees(students);
             })
-            .catch(() => {
-                message.error("Failed to load attendees");
-            })
-            .finally(() => {
-                setAttendeesLoading(false);
-            });
+            .catch(() => message.error("Failed to load attendees"))
+            .finally(() => setAttendeesLoading(false));
     }, [event.event_id, curUser.token]);
 
     const handleOnChangeDeadline = (date) => {
-        if (date > new Date(event.start_time)) {
+        if (date > eventStartTime) {
             message.error("Deadline cannot be after the event's start time.");
             return;
         }
@@ -47,9 +52,10 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 await eventService.deleteEvent(event.event_id);
                 message.success("Event deleted successfully");
                 togglePage();
-            } catch {
+            } catch (error) { 
+                console.error(error);
                 message.error("Failed to delete event.");
-            } finally {
+            } finally { 
                 setLoading(false);
             }
         }
@@ -63,9 +69,10 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 await eventService.updateEvent(event.event_id, { deadline });
                 message.success("Deadline updated successfully");
                 togglePage();
-            } catch {
+            } catch (error) { 
+                console.error(error);
                 message.error("Failed to update deadline");
-            } finally {
+            } finally { 
                 setLoading(false);
             }
         }
@@ -89,7 +96,6 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 if (event.need_major) row.push(att.taken_216 ? 'Yes' : 'No');
                 if (event.need_resume) row.push(att.resume_title || 'N/A');
                 row.push(new Date(att.registered_at).toLocaleString());
-                
                 return row.map(field => `"${String(field || '').replace(/"/g, '""')}"`).join(',');
             })
         ];
@@ -134,7 +140,8 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                     const blob = new Blob([new Uint8Array(resumeBuffer.data)], { type: 'application/pdf' });
                     const url = URL.createObjectURL(blob);
                     return <a href={url} download={record.resume_title || 'resume.pdf'}>Download PDF</a>;
-                } catch {
+                } catch (e) {
+                    console.error('Error creating PDF blob:', e);
                     return 'Invalid Data';
                 }
             },
@@ -155,19 +162,17 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 <Title level={4} className="mb-0">Manage Event: {event.name}</Title>
                 <Button onClick={togglePage}>Back to Events</Button>
             </div>
-
             <Tabs defaultActiveKey="1">
                 <TabPane tab="Settings" key="1">
                     <Title level={5}>Event Details</Title>
                     <Descriptions bordered column={1}>
-                        <Descriptions.Item label="Starts">{new Date(event.start_time).toLocaleString()}</Descriptions.Item>
-                        <Descriptions.Item label="Ends">{new Date(event.end_time).toLocaleString()}</Descriptions.Item>
-                        <Descriptions.Item label="Registration Deadline">{new Date(event.deadline).toLocaleString()}</Descriptions.Item>
+                        <Descriptions.Item label="Starts">{eventStartTime?.toLocaleString()}</Descriptions.Item>
+                        <Descriptions.Item label="Ends">{eventEndTime?.toLocaleString()}</Descriptions.Item>
+                        <Descriptions.Item label="Registration Deadline">{deadline?.toLocaleString()}</Descriptions.Item>
                         <Descriptions.Item label="Location">{event.location?.place_name || 'N/A'}</Descriptions.Item>
                     </Descriptions>
                     <Divider />
                     <Title level={5}>Update Deadline</Title>
-                    <Text type="secondary">This will override the current registration deadline.</Text>
                     <Form onFinish={handleSetDeadline} className="mt-3">
                         <Space align="start">
                             <Form.Item label="New Deadline" rules={[{ required: true, message: 'Please select a deadline' }]}>
@@ -175,17 +180,11 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                                     selected={deadline}
                                     onChange={handleOnChangeDeadline}
                                     showTimeSelect
-                                    timeFormat="HH:mm"
-                                    timeIntervals={15}
                                     dateFormat="MMMM d, yyyy h:mm aa"
                                     className="form-control"
                                 />
                             </Form.Item>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" loading={loading}>
-                                    Update Deadline
-                                </Button>
-                            </Form.Item>
+                            <Button type="primary" htmlType="submit" loading={loading}>Update Deadline</Button>
                         </Space>
                     </Form>
                     <Divider />
@@ -196,13 +195,8 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                     </div>
                 </TabPane>
                 <TabPane tab={`Registered Attendees (${attendees.length})`} key="2">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <Title level={5} className="mb-0">Attendees</Title>
-                        <Button 
-                            icon={<DownloadOutlined />} 
-                            onClick={handleDownloadCSV}
-                            disabled={attendees.length === 0}
-                        >
+                    <div className="d-flex justify-content-end mb-3">
+                        <Button icon={<DownloadOutlined />} onClick={handleDownloadCSV} disabled={attendees.length === 0}>
                             Download as CSV
                         </Button>
                     </div>

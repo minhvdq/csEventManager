@@ -11,23 +11,21 @@ const { Option } = Select;
 
 export default function CreateEventForm({curUser}) {
     const [form] = Form.useForm();
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
+    // State for components not managed by Antd Form (like DatePicker)
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
     const [deadline, setDeadline] = useState(new Date());
+    
+    // State for UI control and external data
     const [locationId, setLocationId] = useState(null);
     const [address, setAddress] = useState('');
     const [lat, setLat] = useState(null);
     const [lng, setLng] = useState(null);
-    const [room, setRoom] = useState('');
     const [preview, setPreview] = useState(null);
     const [poster, setPoster] = useState(null);
     const [isLimited, setIsLimited] = useState(false);
-    const [capacity, setCapacity] = useState(null);
     const [dbLocations, setDbLocations] = useState([]);
     const [loading, setLoading] = useState(true);
-
 
     useEffect(() => {
         setLoading(true);
@@ -41,15 +39,14 @@ export default function CreateEventForm({curUser}) {
     }, [curUser]);
 
     useEffect(() => {
-        setLoading(true)
+        // When startTime changes, adjust endTime and deadline if they are invalid
         if(deadline > startTime){
-            setDeadline(startTime)
+            setDeadline(startTime);
         }
         if(endTime < startTime){
-            setEndTime(startTime)
+            setEndTime(startTime);
         }
-        setLoading(false)
-    }, [startTime])
+    }, [startTime, endTime, deadline]);
 
     const handlePosterChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -57,8 +54,7 @@ export default function CreateEventForm({curUser}) {
             setPoster(selectedFile);
             setPreview(URL.createObjectURL(selectedFile));
         } else {
-            const msg = 'Please select a valid image file.'
-            message.error(msg);
+            message.error('Please select a valid image file.');
             setPoster(null);
             setPreview(null);
         }
@@ -66,53 +62,46 @@ export default function CreateEventForm({curUser}) {
 
     const handleOnChangeEndTime = (date) => {
         if(date < startTime){
-            const msg = "End time is currently before startTime"
-            message.error(msg)
-            return
+            message.error("End time cannot be before the start time.");
+            return;
         }
-        setEndTime(date)
+        setEndTime(date);
     }
 
     const handleOnChangeDeadline = (date) => {
         if(date > startTime){
-            const msg = "Deadline is currently after startTime"
-            message.error(msg)
-            return
+            message.error("Deadline cannot be after the start time.");
+            return;
         }
-        setDeadline(date)
+        setDeadline(date);
     }
 
     const handleSubmit = async (values) => {
+        // All form values are now in the 'values' object from Antd's onFinish
         const body = {
-            name,
-            description,
+            ...values, // Includes name, description, locationName, room, etc.
             locationId,
-            locationName: values.locationName, // Use value from form
             address,
             lat,
             lng,
-            room,
             startTime,
             endTime,
-            needResume: values.needResume,
-            needMajor: values.needMajor,
-            onCampus: values.onCampus,
-            isColloquium: values.isColloquium,
+            deadline,
             isLimited,
-            capacity,
             poster,
-            deadline
         };
       
         try {
-            eventService.setToken(curUser.token)
+            setLoading(true);
+            eventService.setToken(curUser.token);
             await eventService.createEvent(body);
             message.success("Event submitted successfully!");
-            // console.log("Response:", result);
-            window.location.href = frontendBase
+            window.location.href = frontendBase;
         } catch (error) {
             message.error("Failed to submit event.");
             console.error("Error uploading event:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -135,99 +124,86 @@ export default function CreateEventForm({curUser}) {
                     needResume: false,
                     needMajor: false,
                     onCampus: true,
-                    isColloquium: false
+                    isColloquium: false,
+                    room: ''
                     }}
                 >
-                    <Form.Item label="Event Name" required>
-                    <Input
-                        maxLength={100}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="form-control"
-                        required
-                    />
+                    <Form.Item label="Event Name" name="name" rules={[{ required: true, message: 'Please enter the event name.' }]}>
+                        <Input maxLength={100} className="form-control" />
                     </Form.Item>
 
-                    <Form.Item label="Event Description">
-                    <Input.TextArea
-                        maxLength={1000}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="form-control"
-                        rows={3}
-                    />
+                    <Form.Item label="Event Description" name="description">
+                        <Input.TextArea maxLength={1000} className="form-control" rows={3} />
                     </Form.Item>
 
                     <div className="mb-3">
-                    <label className="form-label fw-bold" required>Start Time</label>
-                    <DatePicker
-                        selected={startTime}
-                        onChange={(date) => setStartTime(date)}
-                        showTimeSelect
-                        timeFormat="HH:mm"
-                        timeIntervals={15}
-                        dateFormat="MMMM d, yyyy h:mm aa"
-                        className="form-control"
-                        required
-                    />
+                        <label className="form-label fw-bold">Start Time</label>
+                        <DatePicker
+                            selected={startTime}
+                            onChange={(date) => setStartTime(date)}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            dateFormat="MMMM d, yyyy h:mm aa"
+                            className="form-control"
+                            required
+                        />
                     </div>
 
                     <div className="mb-3">
-                    <label className="form-label fw-bold" required>End Time</label>
-                    <DatePicker
-                        selected={endTime}
-                        onChange={handleOnChangeEndTime}
-                        showTimeSelect
-                        timeFormat="HH:mm"
-                        timeIntervals={15}
-                        dateFormat="MMMM d, yyyy h:mm aa"
-                        className="form-control"
-                    />
+                        <label className="form-label fw-bold">End Time</label>
+                        <DatePicker
+                            selected={endTime}
+                            onChange={handleOnChangeEndTime}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            dateFormat="MMMM d, yyyy h:mm aa"
+                            className="form-control"
+                        />
                     </div>
 
                     <div className="mb-3">
-                    <label className="form-label fw-bold" required>Deadline</label>
-                    <DatePicker
-                        selected={deadline}
-                        onChange={handleOnChangeDeadline}
-                        showTimeSelect
-                        timeFormat="HH:mm"
-                        timeIntervals={15}
-                        dateFormat="MMMM d, yyyy h:mm aa"
-                        className="form-control"
-                    />
+                        <label className="form-label fw-bold">Registration Deadline</label>
+                        <DatePicker
+                            selected={deadline}
+                            onChange={handleOnChangeDeadline}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            dateFormat="MMMM d, yyyy h:mm aa"
+                            className="form-control"
+                        />
                     </div>
 
                     <Form.Item label="Upload Poster">
-                    <input type="file" accept="image/*" onChange={handlePosterChange} className="form-control" />
-                    {preview && (
-                        <div className="mt-3">
-                        <img src={preview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '200px' }} />
-                        </div>
-                    )}
+                        <input type="file" accept="image/*" onChange={handlePosterChange} className="form-control" />
+                        {preview && (
+                            <div className="mt-3">
+                            <img src={preview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '200px' }} />
+                            </div>
+                        )}
                     </Form.Item>
 
                     <Form.Item label="Select Location" required>
-                    <Select
-                        placeholder="Other"
-                        onChange={(value) => {
-                        if (value === 'other') {
-                            setLocationId(null);
-                            form.setFieldsValue({ locationName: '' }); // Clear the input when switching
-                            return;
-                        }
-                        setLocationId(value);
-                        }}
-                        value={locationId || 'other'}
-                        allowClear
-                    >
-                        {dbLocations.map(loc => (
-                        <Option key={loc.location_id} value={loc.location_id}>
-                            {loc.place_name}
-                        </Option>
-                        ))}
-                        <Option value="other">Other</Option>
-                    </Select>
+                        <Select
+                            placeholder="Select a location or choose 'Other'"
+                            onChange={(value) => {
+                                setLocationId(value === 'other' ? null : value);
+                                if (value !== 'other') {
+                                    form.setFieldsValue({ locationName: '' });
+                                }
+                            }}
+                            value={locationId || 'other'}
+                            allowClear
+                        >
+                            {dbLocations.map(loc => (
+                            <Option key={loc.location_id} value={loc.location_id}>
+                                {loc.place_name}
+                            </Option>
+                            ))}
+                            <Option value="other">Other</Option>
+                        </Select>
                     </Form.Item>
 
                     {!locationId && (
@@ -236,10 +212,7 @@ export default function CreateEventForm({curUser}) {
                             label="New Location Name"
                             name="locationName"
                             rules={[
-                                {
-                                    required: true,
-                                    message: 'Please enter a location name.',
-                                },
+                                { required: true, message: 'Please enter a location name.' },
                                 {
                                     validator: (_, value) => {
                                         const isDuplicate = dbLocations.some(loc => loc.place_name.toLowerCase() === (value || '').toLowerCase());
@@ -255,62 +228,51 @@ export default function CreateEventForm({curUser}) {
                         </Form.Item>
 
                         <Form.Item label="Address">
-                        <AutoCompleteGGMap
-                            address={address}
-                            setAddress={setAddress}
-                            lat={lat}
-                            setLat={setLat}
-                            lng={lng}
-                            setLng={setLng}
-                        />
+                            <AutoCompleteGGMap
+                                address={address}
+                                setAddress={setAddress}
+                                lat={lat}
+                                setLat={setLat}
+                                lng={lng}
+                                setLng={setLng}
+                            />
                         </Form.Item>
 
-                        <Form.Item label="Room (Optional)">
-                        <Input
-                            value={room}
-                            onChange={(e) => setRoom(e.target.value)}
-                            className="form-control"
-                            maxLength={10}
-                        />
+                        <Form.Item label="Room (Optional)" name="room">
+                            <Input className="form-control" maxLength={10} />
                         </Form.Item>
                     </>
                     )}
 
                     <Form.Item label="Limit Capacity?">
-                    <Switch checked={isLimited} onChange={(checked) => {
-                        setIsLimited(checked);
-                        if (!checked) setCapacity(null);
-                    }} />
-                    {isLimited && (
-                        <Input
-                        type="number"
-                        value={capacity}
-                        onChange={(e) => setCapacity(e.target.value)}
-                        className="form-control mt-2"
-                        />
-                    )}
+                        <Switch checked={isLimited} onChange={setIsLimited} />
+                        {isLimited && (
+                            <Form.Item name="capacity" noStyle rules={[{ required: true, message: 'Please enter a capacity.'}]}>
+                                <Input type="number" className="form-control mt-2" placeholder="Enter capacity" />
+                            </Form.Item>
+                        )}
                     </Form.Item>
 
                     <Form.Item name="onCampus" label="Is this event on-campus?" valuePropName="checked">
-                    <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item name="isColloquium" label="Does it count as colloquium?" valuePropName="checked">
-                    <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item name="needMajor" label="Do students need to be CS majors?" valuePropName="checked">
-                    <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item name="needResume" label="Require resume submission?" valuePropName="checked">
-                    <Switch checkedChildren="Yes" unCheckedChildren="No" />
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item>
-                    <Button type="primary" htmlType="submit" className="mt-3">
-                        Create Event
-                    </Button>
+                        <Button type="primary" htmlType="submit" className="mt-3">
+                            Create Event
+                        </Button>
                     </Form.Item>
                 </Form>
                 </div>
@@ -330,12 +292,7 @@ export default function CreateEventForm({curUser}) {
                     <Button
                         type="primary"
                         danger
-                        onClick={(e) => {
-                            e.preventDefault()
-                            // console.log("Cancel clicked");
-
-                            window.location.href = frontendBase
-                        }}
+                        onClick={() => window.location.href = frontendBase}
                     >
                         Cancel
                     </Button>

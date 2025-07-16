@@ -3,10 +3,11 @@ import { Card, Typography, Button, Tag, Row, Col, Space, message } from "antd";
 
 const { Title, Text } = Typography;
 
-function getLocalTimeZoneAbbreviation(date = new Date()) {
+function getLocalTimeZoneAbbreviation(date) {
+    if (!date) return "";
     const options = { timeZoneName: "short" };
-    const formatter = new Intl.DateTimeFormat(undefined, options);
-    const parts = formatter.formatToParts(date);
+    // Find the timezone name part from the formatted string
+    const parts = new Intl.DateTimeFormat(undefined, options).formatToParts(date);
     const zonePart = parts.find((part) => part.type === "timeZoneName");
     return zonePart?.value || "";
 }
@@ -22,31 +23,21 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
         }
     }, [showDescription]);
 
-    const { lat, lng, address } = event.location || {};
-    const canRegister = Date.now() < new Date(event.deadline);
-
-    const start = new Date(event.start_time);
-    const end = new Date(event.end_time);
+    // The faulty parsing function has been removed.
+    // new Date() correctly handles ISO 8601 UTC strings and converts them to the local timezone.
+    const start = event.start_time ? new Date(event.start_time) : null;
+    const end = event.end_time ? new Date(event.end_time) : null;
     const deadline = event.deadline ? new Date(event.deadline) : null;
+    
+    const canRegister = deadline && (Date.now() < deadline.getTime());
     const localZone = getLocalTimeZoneAbbreviation(start);
+    const isSameDate = start && end && start.toDateString() === end.toDateString();
 
-    const isSameDate = start.toDateString() === end.toDateString();
-
-    const formatDate = (date) =>
-        date.toLocaleDateString(undefined, {
-            weekday: "long",
-            month: "short",
-            day: "numeric",
-            year: "numeric"
-        });
-
-    const formatTime = (date) =>
-        date.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+    const formatDate = (date) => date ? date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" }) : "";
+    const formatTime = (date) => date ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
     const handleDirect = () => {
+        const { lat, lng, address } = event.location || {};
         let query = "";
         if (lat && lng) {
             query = `${lat},${lng}`;
@@ -63,39 +54,24 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
     return (
         <Card
             className="mb-4 shadow-sm"
-            style={{
-                borderRadius: "16px",
-                border: "1px solid #ddd",
-                backgroundColor: "#fff",
-                padding: "16px"
-            }}
+            style={{ borderRadius: "16px", border: "1px solid #ddd", backgroundColor: "#fff", padding: "16px" }}
         >
             <Row gutter={[16, 16]} align="middle">
                 <Col xs={24} md={6}>
                     <img
                         src={event.poster_data}
                         alt="poster"
-                        style={{
-                            width: "100%",
-                            borderRadius: "12px",
-                            objectFit: "cover",
-                            maxHeight: "170px"
-                        }}
+                        style={{ width: "100%", borderRadius: "12px", objectFit: "cover", maxHeight: "170px" }}
                     />
                 </Col>
 
                 <Col xs={24} md={18}>
                     <Row justify="space-between" align="top">
                         <Col span={18}>
-                            <Title level={4} className="mb-1" style={{ fontWeight: "700" }}>
-                                {event.name}
-                            </Title>
-
+                            <Title level={4} className="mb-1" style={{ fontWeight: "700" }}>{event.name}</Title>
                             {isSameDate ? (
                                 <>
-                                    <Text className="d-block" style={{ fontSize: "14px" }}>
-                                        {formatDate(start)}
-                                    </Text>
+                                    <Text className="d-block" style={{ fontSize: "14px" }}>{formatDate(start)}</Text>
                                     <Text className="d-block mb-2" style={{ fontSize: "14px" }}>
                                         {formatTime(start)} – {formatTime(end)} ({localZone})
                                     </Text>
@@ -112,10 +88,7 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                             )}
                             
                             {deadline && (
-                                <Text
-                                    className="d-block mb-2"
-                                    style={{ fontSize: "14px", color: "#f5222d" }}
-                                >
+                                <Text className="d-block mb-2" style={{ fontSize: "14px", color: canRegister ? '#52c41a' : '#f5222d' }}>
                                     <strong>Registration Deadline:</strong> {formatDate(deadline)} at {formatTime(deadline)} ({localZone})
                                 </Text>
                             )}
@@ -127,41 +100,22 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                                 <Tag
                                     onClick={handleDirect}
                                     color="#d9d9d9"
-                                    style={{
-                                        borderRadius: "20px",
-                                        padding: "2px 10px",
-                                        fontSize: "12px",
-                                        cursor: "pointer",
-                                        width: "fit-content"
-                                    }}
+                                    style={{ borderRadius: "20px", padding: "2px 10px", fontSize: "12px", cursor: "pointer", width: "fit-content" }}
                                 >
                                     📍 direct me
                                 </Tag>
                                 <br/>
                                 <Space>
-                                    {event.is_colloquium == 1&& <Tag color="purple">Colloquium</Tag>}
-                                    {event.on_campus ==1 && <Tag color="blue">On Campus</Tag>}
+                                    {event.is_colloquium == 1 && <Tag color="purple">Colloquium</Tag>}
+                                    {event.on_campus == 1 && <Tag color="blue">On Campus</Tag>}
                                 </Space>
                             </Space>
-
                             <div
                                 ref={descriptionRef}
-                                style={{
-                                    overflow: "hidden",
-                                    maxHeight: descHeight,
-                                    transition: "max-height 0.3s ease",
-                                }}
+                                style={{ overflow: "hidden", maxHeight: descHeight, transition: "max-height 0.3s ease" }}
                             >
-                                <Text
-                                    style={{
-                                        fontSize: "14px",
-                                        display: "block",
-                                        marginTop: "8px",
-                                    }}
-                                >
-                                    <strong>Description:</strong>
-                                    <br/>
-                                    {event.description}
+                                <Text style={{ fontSize: "14px", display: "block", marginTop: "8px" }}>
+                                    <strong>Description:</strong><br/>{event.description}
                                 </Text>
                             </div>
                         </Col>
@@ -171,11 +125,7 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                                 {canRegister && (
                                     <Button
                                         type="primary"
-                                        style={{
-                                            backgroundColor: "#5890F1",
-                                            borderRadius: "20px",
-                                            padding: "4px 16px"
-                                        }}
+                                        style={{ backgroundColor: "#5890F1", borderRadius: "20px", padding: "4px 16px" }}
                                         onClick={onRegisterClick}
                                     >
                                         Register
@@ -183,10 +133,7 @@ export default function EventCard({ event, onRegisterClick, onManageClick, curUs
                                 )}
                                 {curUser && (
                                     <Button
-                                        style={{
-                                            borderRadius: "20px",
-                                            padding: "4px 16px"
-                                        }}
+                                        style={{ borderRadius: "20px", padding: "4px 16px" }}
                                         onClick={onManageClick}
                                     >
                                         Manage Event
