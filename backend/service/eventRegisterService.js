@@ -36,7 +36,7 @@ const registerWithEmail = async ({eventId, email}) => {
     const hashedToken = await bcrypt.hash(newToken, Number(config.BCRYPT_SALT))
     try{
         await RegisterToken.create({eventId, email, token: hashedToken})
-        const link = `${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}`
+        const link = process.env.NODE_ENV === 'development' ? `${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}` : `http://acm.gettysburg.edu${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}`
         mailService.sendEmail(
             email,
             "Register for Event",
