@@ -7,6 +7,9 @@ const getAll = async () => {
 
 const getByEmail = async (email) => {
     const [rows] = await db.query('SELECT * FROM students WHERE school_email = ?', [email])
+    if(!rows || rows.length < 1){
+        return null
+    }
     return rows[0]
 }
 

@@ -16,6 +16,16 @@ eventRouter.get('/', async (req, res) => {
     
 })
 
+eventRouter.get('/:id', async (req, res) => {
+    try{
+        const { id } = req.params
+        const event = await eventService.getEventById(id)
+        res.status(200).json(event)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
 eventRouter.post('/', upload.single('poster'), async (req, res) => {
     if (req.body.locationId === 'null') {
         req.body.locationId = null;

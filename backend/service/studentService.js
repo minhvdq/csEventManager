@@ -30,11 +30,8 @@ const getStudentByEmail = async (email) => {
   if (student) {
     student = transformResumeToDataURL(student);
   }
-  
-  return {
-    exists: !!student, // A cleaner way to write student ? true : false
-    student: student,
-  };
+  // console.log("student: " + JSON.stringify(student))
+  return student;
 };
 
 const createStudent = async (body) => {

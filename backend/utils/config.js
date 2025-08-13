@@ -11,6 +11,7 @@ const SECRET = process.env.SECRET
 const EMAIL_HOST = process.env.EMAIL_HOST
 const EMAIL_USER = process.env.EMAIL_USER
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
+const BCRYPT_SALT = process.env.BCRYPT_SALT
 
 module.exports = { 
                     // MONGODB_URI, 
@@ -23,5 +24,6 @@ module.exports = {
                     SECRET,
                     EMAIL_PASSWORD, 
                     EMAIL_USER, 
-                    EMAIL_HOST 
+                    EMAIL_HOST,
+                    BCRYPT_SALT
                 }

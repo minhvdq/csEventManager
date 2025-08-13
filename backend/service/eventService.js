@@ -27,17 +27,35 @@ const getAllEvents = async () => {
 };
 
 const getEventById = async (id) => {
+    // const event = await Event.getById(id)
+
+    // const location = await Location.getById(event.location_id)
+
+    // let poster_data = poster_data
+
+    // if (event.poster_data){
+    //   const posterBuffer = event.poster_data
+    //   const posterBase64 = posterBuffer.toString('base64')
+    //   poster_data = `data:image/jpeg;base64,${posterBase64}`
+    // }
+
+    // return {
+    //     ...event,
+    //     poster_data: poster_data,
+    //     location: location
+    // }
     const event = await Event.getById(id)
 
-    const location = await Location.getById(event.location_id)
-
-    let poster_data = poster_data
-
+    const locations = await Location.getAll()
+  
+    
+    let poster_data = event.poster_data
     if (event.poster_data){
       const posterBuffer = event.poster_data
       const posterBase64 = posterBuffer.toString('base64')
       poster_data = `data:image/jpeg;base64,${posterBase64}`
     }
+    const location = locations.find(l => l.location_id === event.location_id)
 
     return {
         ...event,

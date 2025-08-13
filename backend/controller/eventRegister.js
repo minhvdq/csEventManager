@@ -37,6 +37,36 @@ eventRegisterRouter.get('/byEvent/:eventId', async (req, res) => {
     }
 })
 
+eventRegisterRouter.post('/registerWithEmail', async({body}, res) => {
+    const{
+        eventId,
+        email
+    } = body
+
+    try{
+        await eventRegisterService.registerWithEmail({eventId, email})
+        res.status(200).json({message: "Email sent successfully"})
+    }catch(e){
+        console.log("error: " + e.message)
+        res.status(400).json({error: e.message})
+    }
+})
+
+eventRegisterRouter.post('/checkStudentWithEmail', async({body}, res) => {
+    const{
+        eventId,
+        email,
+        token
+    } = body
+    try{
+        const student = await eventRegisterService.checkStudentWithEmail({eventId, email, token})
+        res.status(200).json(student)
+    }catch(e){
+        console.log("error: " + e.message)
+        res.status(400).json({error: e.message})
+    }
+})
+
 
 eventRegisterRouter.post('/newStudent', upload.single("resume"), async (req, res) => {
     try{
