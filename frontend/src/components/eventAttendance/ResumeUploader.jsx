@@ -4,7 +4,7 @@ import { UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-export default function ResumeUpload({ setResume, existingResumeTitle, existingResumeUrl }) {
+export default function ResumeUpload({ setResume, setResumeTitle, existingResumeTitle, existingResumeUrl }) {
     const [file, setFile] = useState(null);
     const [displayFileName, setDisplayFileName] = useState(null);
     const [fileList, setFileList] = useState([]);
@@ -14,6 +14,7 @@ export default function ResumeUpload({ setResume, existingResumeTitle, existingR
     useEffect(() => {
         if (!file && !resumeManuallyCleared && existingResumeTitle) {
             setDisplayFileName(existingResumeTitle);
+            setResumeTitle(existingResumeTitle);
         }
     }, [existingResumeTitle, file, resumeManuallyCleared]);
 
@@ -36,6 +37,7 @@ export default function ResumeUpload({ setResume, existingResumeTitle, existingR
         setFile(raw);
         setResume(raw);
         setDisplayFileName(raw.name);
+        setResumeTitle(raw.name);
         setFileList([wrapped]);
         setResumeManuallyCleared(false); // Reset manual clear state
     };
@@ -44,6 +46,7 @@ export default function ResumeUpload({ setResume, existingResumeTitle, existingR
         setFile(null);
         setResume(null);
         setDisplayFileName(null);
+        setResumeTitle(null);
         setFileList([]);
         setResumeManuallyCleared(true); // Prevent fallback to existing resume
     };

@@ -24,6 +24,7 @@ const formatDateTimeForMySQL = (date) => {
 };
 
 
+
 const createEvent = async (body) => {
     const formData = new FormData();
     
@@ -74,6 +75,11 @@ const getAll = async () => {
     return eventsObj.data
 }
 
+const getByID = async (eventId) => {
+    const event_name = await axios.get(`${eventUrl}/${eventId}`)
+    return event_name.data
+}
+
 const deleteEvent = async (eventId) => {
     const response = await axios.delete(`${backendBase}/api/events/${eventId}`, {
         headers: {
@@ -83,4 +89,4 @@ const deleteEvent = async (eventId) => {
     return response
 }
 
-export default {getAll, createEvent, setToken, updateEvent, deleteEvent}
+export default {getAll, getByID, createEvent, setToken, updateEvent, deleteEvent}

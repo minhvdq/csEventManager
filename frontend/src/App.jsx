@@ -10,6 +10,7 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound';
 import Admin from './pages/Admin'
 import CreateEventForm from './pages/CreateEventForm';
+import EventRegister from './pages/EventRegister';
 
 function App() {
   const [events, setEvents] = useState([])
@@ -47,6 +48,7 @@ function App() {
         <Route path='/authen' element={<Authentication events={ events } curUser={ curUser } setCurUser={setCurUser}/>}/>
         <Route path='/create' element={<CreateEventForm curUser={curUser}/>} />
         <Route path='/admin' element={<Admin curUser={curUser} handleLogout={handleLogout}/>} />
+        <Route path='/register' element={<EventRegister/>}/>
         <Route paht='*' element={<NotFound/>}/>
       </Routes>
     </BrowserRouter>
