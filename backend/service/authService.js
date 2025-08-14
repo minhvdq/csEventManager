@@ -8,7 +8,7 @@ const Token = require('../dataaccess/token')
 
 const bcryptSalt = process. env.BCRYPT_SALT;
 // const JWTSecret = process.env.SECRET;
-const clientURL = `${backendBase}/PasswordReset/ui_assets/index.html`;
+const clientURL = `/eventHub/PasswordReset/ui_assets/index.html`;
 
 const requestPasswordReset = async (email) => {
     const user = await User.getByEmail( email );
@@ -21,8 +21,10 @@ const requestPasswordReset = async (email) => {
     const hash = await bcrypt.hash(resetToken, Number(bcryptSalt));
   
     await Token.create(user.user_id, hash)
+
+    const prefix = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://acm.gettysburg.edu'
   
-    const link = `${clientURL}?token=${resetToken}&id=${user.user_id}`;
+    const link = `${prefix}${clientURL}?token=${resetToken}&id=${user.user_id}`;
   
     mailService.sendEmail(
       user.email,
