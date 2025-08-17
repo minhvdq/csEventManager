@@ -9,6 +9,9 @@ const bcrypt = require('bcrypt')
 const config = require('../utils/config')
 const {frontendBase} = require('../utils/homeUrl')
 
+const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'http://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
+ 
+
 const getRegistrationsForEvent = async (eventId) => {
     const registrations = await EventAttendance.getByEventId(eventId);
     return Promise.all(registrations.map(async (reg) => {
@@ -40,7 +43,7 @@ const registerWithEmail = async ({eventId, email}) => {
         mailService.sendEmail(
             email,
             "Register for Event",
-            {link: link},
+            {link: link, logoUrl: logUrl},
             "/templates/registerEvent.handlebars"
         )
         return
@@ -131,7 +134,7 @@ const registerWithExistingStudent = async (body) => {
         mailService.sendEmail(
             student.school_email,
             "Successfully Registered for Event",
-            { event_name: event.name, name: student.first_name },
+            { event_name: event.name, name: student.first_name, logoUrl: logUrl },
             "/templates/successfullyRegisterEvent.handlebars"
         )
         console.log("Deleting token")
@@ -192,7 +195,7 @@ const registerWithNewStudent = async (body) => {
         mailService.sendEmail(
             schoolEmail,
             "Successfully Registered for Event",
-            { event_name: event.name, name: firstName },
+            { event_name: event.name, name: firstName, logoUrl: logUrl },
             "/templates/successfullyRegisterEvent.handlebars"
         )
         await RegisterToken.deleteByEventIdAndEmail(eventId, schoolEmail)

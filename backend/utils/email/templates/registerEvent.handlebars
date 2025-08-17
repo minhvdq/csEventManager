@@ -1,12 +1,72 @@
 <html>
     <head>
         <style>
-
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #eeeeee;
+            }
+            .content {
+                padding: 20px 0;
+                line-height: 1.6;
+                color: #333333;
+            }
+            .button-container {
+                text-align: center;
+                margin: 30px 0;
+            }
+            .button {
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #007bff;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            .footer {
+                text-align: center;
+                padding-top: 20px;
+                border-top: 1px solid #eeeeee;
+                font-size: 12px;
+                color: #888888;
+            }
+            .logo {
+                margin-top: 15px;
+                max-width: 100px;
+            }
         </style>
     </head>
     <body>
-        <p>Hi,</p>
-        <p> Please Verify your email!</p>
-        <a href="{{link}}">Verify Email</a>
+        <div class="email-container">
+            <div class="header">
+                <h2>Event Registration Verification</h2>
+            </div>
+            <div class="content">
+                <p>Hi,</p>
+                <p>Thank you for registering for an event. Please click the button below to verify your email address and confirm your registration.</p>
+                <div class="button-container">
+                    <a href="{{link}}" class="button">Verify Email</a>
+                </div>
+                <p>If you did not register for an event, no further action is required.</p>
+            </div>
+            <div class="footer">
+                <p>Contact: <a href="mailto:vudimi01@gettysburg.edu">vudimi01@gettysburg.edu</a></p>
+                <img src="{{logoUrl}}" alt="ACM Logo" class="logo">
+            </div>
+        </div>
     </body>
 </html>

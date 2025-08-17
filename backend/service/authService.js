@@ -9,6 +9,7 @@ const Token = require('../dataaccess/token')
 const bcryptSalt = process. env.BCRYPT_SALT;
 // const JWTSecret = process.env.SECRET;
 const clientURL = `/eventHub/PasswordReset/ui_assets/index.html`;
+const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'http://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
 
 const requestPasswordReset = async (email) => {
     const user = await User.getByEmail( email );
@@ -32,6 +33,7 @@ const requestPasswordReset = async (email) => {
       {
         name: user.first_name,
         link: link,
+        logoUrl: logUrl
       },
       "/templates/requestResetPassword.handlebars"
     );
@@ -45,7 +47,7 @@ const resetPassword = async (userId, token, password) => {
         throw new Error("Invalid or expired password reset token");
     }
   
-    console.log(passwordResetToken.token, token);
+    // console.log(passwordResetToken.token, token);
   
     const isValid = await bcrypt.compare(token, passwordResetToken.token);
   
@@ -56,7 +58,16 @@ const resetPassword = async (userId, token, password) => {
   
     const hash = await bcrypt.hash(password, Number(bcryptSalt));
   
-    await User.updatePasswordById(hash, userId)
+    const user = await User.updatePasswordById(hash, userId)
+    mailService.sendEmail(
+        user.email,
+        "Password Reset Request",
+        {
+            name: user.first_name,
+            logoUrl: logUrl
+        },
+        "/templates/requestResetPassword.handlebars"
+    );
     await Token.deleteById(passwordResetToken.id)
     return {message: "Password reset successfully"}
 }

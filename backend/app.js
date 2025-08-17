@@ -62,6 +62,19 @@ app.use('/eventHub/api/photo', photoRouter);
 app.use('/eventHub/api/auth', authRouter)
 
 // === Serve Static Files ===
+
+app.use(
+  '/eventHub',
+  express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+      // You can add headers for image files here if needed
+      if (filePath.endsWith('.jpg') || filePath.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/jpeg'); // or 'image/png'
+      }
+    }
+  })
+);
+
 app.use(
   '/eventHub',
   express.static(path.join(__dirname, 'dist'), {
