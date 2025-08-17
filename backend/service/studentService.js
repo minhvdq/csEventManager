@@ -1,11 +1,7 @@
 const Student = require('../dataaccess/student');
 const EventAttendance = require('../dataaccess/eventAttendance');
 
-/**
- * Transforms a student's raw resume buffer into a Base64 Data URL.
- * @param {object} student - The student object from the database.
- * @returns {object} The student object with the resume field converted.
- */
+
 const transformResumeToDataURL = (student) => {
   // Check if the student and the resume buffer exist
   if (student && student.resume) {

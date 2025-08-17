@@ -1,36 +1,37 @@
 import React, { useState, useEffect } from 'react';
-// Changed: Added Tooltip for better UX, but not strictly required by the prompt.
-import { Card, Button, Typography, Tabs, Form, message, Descriptions, Space, Divider, Table, Upload, Image, List } from 'antd';
-// Changed: Imported DeleteOutlined icon
-import { DownloadOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Button, Typography, Tabs, Form, message, Descriptions, Space, Divider, Table, Upload, Image, List, Input, Tooltip } from 'antd';
+import { DownloadOutlined, UploadOutlined, DeleteOutlined, PlusOutlined, FileOutlined } from '@ant-design/icons';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import eventService from '../../services/event';
 import eventRegisterService from '../../services/eventRegister';
 import photoService from '../../services/photo';
+import resourceService from '../../services/resource';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
+const { TextArea } = Input;
 
 // Helper function to parse MySQL DATETIME string as a local Date object
 const parseMySqlDateTimeAsLocal = (dateTimeString) => {
     if (!dateTimeString) return null;
-    // Strips 'T' and 'Z' and treats the string as local time
     const localDateTimeString = dateTimeString.slice(0, 19).replace('T', ' ');
     return new Date(localDateTimeString);
 };
 
-export default function EventManager({ event, togglePage, curUser, handleDeleteEventLocal }) {
+export default function EventManager({ event, setEvents, togglePage, curUser, handleDeleteEventLocal }) {
     // State for general loading, attendees loading, and upload loading
     const [loading, setLoading] = useState(false);
     const [attendeesLoading, setAttendeesLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [resourceLoading, setResourceLoading] = useState(false);
 
     // State for event data
     const [deadline, setDeadline] = useState(parseMySqlDateTimeAsLocal(event.deadline));
     const [attendees, setAttendees] = useState([]);
     const [photos, setPhotos] = useState([]);
-    
+    const [resources, setResources] = useState([]);
+
     // State for photo upload
     const [fileList, setFileList] = useState([]);
 
@@ -38,11 +39,9 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
     const eventStartTime = parseMySqlDateTimeAsLocal(event.start_time);
     const eventEndTime = parseMySqlDateTimeAsLocal(event.end_time);
 
-    useEffect(() => {
-        console.log(JSON.stringify(photos))
-    }, [photos ])
+    const [addResourceForm] = Form.useForm();
 
-    // Effect to fetch initial photos and attendees for the event
+    // Effect to fetch initial data for the event
     useEffect(() => {
         // Fetch photos
         photoService.getForEvent(event.event_id)
@@ -61,9 +60,20 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
             })
             .catch(() => message.error("Failed to load attendees"))
             .finally(() => setAttendeesLoading(false));
+
+        // Fetch resources
+        setResourceLoading(true);
+        resourceService.setToken(curUser.token);
+        resourceService.getForEvent(event.event_id)
+            .then(initialResources => setResources(initialResources))
+            .catch(error => {
+                console.error("Failed to load resources:", error);
+                message.error("Failed to load resources.");
+            })
+            .finally(() => setResourceLoading(false));
+
     }, [event.event_id, curUser.token]);
 
-    // Handler for changing the deadline date picker
     const handleOnChangeDeadline = (date) => {
         if (date > eventStartTime) {
             message.error("Deadline cannot be after the event's start time.");
@@ -72,7 +82,6 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
         setDeadline(date);
     };
 
-    // Handler to permanently delete the event
     const handleDeleteEvent = async () => {
         if (window.confirm("Are you sure you want to permanently delete this event? This action cannot be undone.")) {
             setLoading(true);
@@ -81,17 +90,16 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 eventService.setToken(curUser.token);
                 await eventService.deleteEvent(event.event_id);
                 message.success("Event deleted successfully");
-                togglePage(); // Navigate back
-            } catch (error) { 
+                togglePage();
+            } catch (error) {
                 console.error("Error deleting event:", error);
                 message.error("Failed to delete event.");
-            } finally { 
+            } finally {
                 setLoading(false);
             }
         }
     };
-    
-    // Handler to update the registration deadline
+
     const handleSetDeadline = async () => {
         if (window.confirm("Are you sure you want to update the deadline?")) {
             setLoading(true);
@@ -99,17 +107,17 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 eventService.setToken(curUser.token);
                 await eventService.updateEvent(event.event_id, { deadline });
                 message.success("Deadline updated successfully");
-                togglePage(); // Refresh or navigate back
-            } catch (error) { 
+                setEvents(prevEvents => prevEvents.map(e => e.event_id === event.event_id ? { ...e, deadline: deadline.toISOString() } : e));
+                togglePage();
+            } catch (error) {
                 console.error("Error updating deadline:", error);
                 message.error("Failed to update deadline");
-            } finally { 
+            } finally {
                 setLoading(false);
             }
         }
     };
 
-    // Handler to download attendee list as CSV
     const handleDownloadCSV = () => {
         const headers = ['FirstName', 'LastName', 'SchoolEmail', 'SchoolID'];
         if (event.need_major) headers.push('TakenCS216');
@@ -143,14 +151,12 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
         URL.revokeObjectURL(link.href);
     };
 
-    // Handler for uploading selected photos
     const handleUploadPhotos = async () => {
         if (fileList.length === 0) {
             message.warning("Please select photos to upload.");
             return;
         }
         setUploading(true);
-        // Extract file data and captions from the fileList state
         const captions = fileList.map(file => file.name);
         const photoFiles = fileList.map(file => file.originFileObj);
 
@@ -162,10 +168,14 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                 captions: captions
             });
             message.success(`${fileList.length} photos uploaded successfully!`);
-            setFileList([]); // Clear the file list
-            // Refresh the photos list from the server
-            const updatedPhotos = await photoService.getForEvent(event.event_id);
-            setPhotos(updatedPhotos);
+            setFileList([]);
+            setTimeout(async () => {
+                setLoading(true);
+                const updatedPhotos = await photoService.getForEvent(event.event_id);
+                console.log("photos: " + updatedPhotos.length)
+                setPhotos(updatedPhotos);
+                setLoading(false);
+            }, 1500);
         } catch (error) {
             console.error("Photo upload failed:", error);
             message.error("Photo upload failed. Please try again.");
@@ -175,47 +185,84 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
     };
 
     const handleDeletePhoto = async (photo) => {
-        if(window.confirm("Are you sure you want to delete this photo?")){
+        if (window.confirm("Are you sure you want to delete this photo?")) {
             setLoading(true)
-            try{
+            try {
                 photoService.setToken(curUser.token)
                 await photoService.deletePhoto(photo.photo_id)
                 const updatedPhotos = photos.filter(p => p.photo_id !== photo.photo_id)
                 setPhotos(updatedPhotos)
                 message.success("Photo deleted successfully.");
-            }catch(error){
+            } catch (error) {
                 console.error("Photo deletion failed:", error);
                 message.error("Photo deletion failed. Please try again.");
-            }finally{
+            } finally {
                 setLoading(false)
             }
         }
     }
 
-    // Handler for when the file list changes in the Upload component
     const handlePhotoChange = ({ fileList: newFileList }) => {
-        // Enforce the 5-file limit by slicing the array
         const limitedList = newFileList.slice(-5);
         setFileList(limitedList);
-
         if (newFileList.length > 5) {
             message.error('You can only upload a maximum of 5 photos at a time.');
         }
     };
 
-    // Props for the Ant Design Upload component
     const uploadProps = {
         listType: "picture",
         fileList: fileList,
         onChange: handlePhotoChange,
-        // beforeUpload is crucial to prevent the component from uploading the file automatically.
-        // We want to handle the upload manually with our own service call.
         beforeUpload: () => false,
         multiple: true,
         accept: "image/*",
     };
 
-    // Columns configuration for the attendees table
+    const handleAddResource = async (values) => {
+        setResourceLoading(true);
+        try {
+            resourceService.setToken(curUser.token);
+            const newResource = await resourceService.addResource({
+                eventId: event.event_id,
+                title: values.title,
+                description: values.description,
+                fileUrl: values.fileUrl,
+            });
+            console.log(JSON.stringify(newResource))
+            setResources(prevResources => [...prevResources, {
+                resource_id: newResource.insertId,
+                title: values.title,
+                description: values.description,
+                file_url: values.fileUrl,
+            }]);
+            message.success("Resource added successfully!");
+            addResourceForm.resetFields();
+        } catch (error) {
+            console.error("Failed to add resource:", error);
+            message.error("Failed to add resource. Please check the URL and try again.");
+        } finally {
+            setResourceLoading(false);
+        }
+    };
+
+    const handleDeleteResource = async (resourceId) => {
+        if (window.confirm("Are you sure you want to delete this resource?")) {
+            setResourceLoading(true);
+            try {
+                resourceService.setToken(curUser.token);
+                await resourceService.deleteResource(resourceId);
+                setResources(prevResources => prevResources.filter(r => r.resource_id !== resourceId));
+                message.success("Resource deleted successfully.");
+            } catch (error) {
+                console.error("Failed to delete resource:", error);
+                message.error("Failed to delete resource. Please try again.");
+            } finally {
+                setResourceLoading(false);
+            }
+        }
+    };
+
     const attendeeColumns = [
         { title: 'First Name', dataIndex: 'first_name', key: 'first_name', sorter: (a, b) => a.first_name.localeCompare(b.first_name) },
         { title: 'Last Name', dataIndex: 'last_name', key: 'last_name', sorter: (a, b) => a.last_name.localeCompare(b.last_name) },
@@ -311,44 +358,104 @@ export default function EventManager({ event, togglePage, curUser, handleDeleteE
                         scroll={{ x: true }}
                     />
                 </TabPane>
-                <TabPane tab={`Photos (${photos.length})`} key="3">
-                    <Title level={5}>Upload New Photos</Title>
-                    <Text type="secondary">You can upload up to 5 photos at a time. The filename will be used as the caption.</Text>
-                    <div style={{ marginTop: '1rem' }}>
-                        <Upload {...uploadProps}>
-                            <Button icon={<UploadOutlined />}>Select Files</Button>
-                        </Upload>
-                        <Button
-                            type="primary"
-                            onClick={handleUploadPhotos}
-                            disabled={fileList.length === 0}
-                            loading={uploading}
-                            style={{ marginTop: 16 }}
-                        >
-                            {uploading ? 'Uploading...' : 'Start Upload'}
-                        </Button>
-                    </div>
-                    <Divider />
-                    <Title level={5}>Event Photo Gallery</Title>
-                    <List
-                        grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 5 }}
-                        dataSource={photos}
-                        renderItem={item => (
-                            <List.Item>
-                                {/* --- Start of Changes --- */}
-                                <Card
-                                    hoverable
-                                    cover={<Image alt={item.caption} src={item.photo_data} style={{ height: 150, objectFit: 'cover' }} />}
-                                    actions={[
-                                        <DeleteOutlined key="delete" style={{ color: 'red' }} onClick={() => handleDeletePhoto(item)} />
-                                    ]}
+                <TabPane tab={`Resources (${photos.length + resources.length})`} key="3">
+                    <Tabs defaultActiveKey="photos" size="small">
+                        <TabPane tab={`Photos (${photos.length})`} key="photos">
+                            <Title level={5}>Upload New Photos</Title>
+                            <Text type="secondary">You can upload up to 5 photos at a time. The filename will be used as the caption.</Text>
+                            <div style={{ marginTop: '1rem' }}>
+                                <Upload {...uploadProps}>
+                                    <Button icon={<UploadOutlined />}>Select Files</Button>
+                                </Upload>
+                                <Button
+                                    type="primary"
+                                    onClick={handleUploadPhotos}
+                                    disabled={fileList.length === 0}
+                                    loading={uploading}
+                                    style={{ marginTop: 16 }}
                                 >
-                                    <Card.Meta title={item.caption} />
-                                </Card>
-                                {/* --- End of Changes --- */}
-                            </List.Item>
-                        )}
-                    />
+                                    {uploading ? 'Uploading...' : 'Start Upload'}
+                                </Button>
+                            </div>
+                            <Divider />
+                            <Title level={5}>Event Photo Gallery</Title>
+                            <List
+                                grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 5 }}
+                                dataSource={photos}
+                                renderItem={item => (
+                                    <List.Item>
+                                        <Card
+                                            hoverable
+                                            cover={<Image alt={item.caption} src={item.photo_data} style={{ height: 150, objectFit: 'cover' }} />}
+                                            actions={[
+                                                <Tooltip title="Delete Photo"><DeleteOutlined key="delete" style={{ color: 'red' }} onClick={() => handleDeletePhoto(item)} /></Tooltip>
+                                            ]}
+                                        >
+                                            <Card.Meta title={item.caption} />
+                                        </Card>
+                                    </List.Item>
+                                )}
+                            />
+                        </TabPane>
+                        <TabPane tab={`Files (${resources.length})`} key="files">
+                            <Title level={5}>Add New Resource</Title>
+                            <Form
+                                form={addResourceForm}
+                                onFinish={handleAddResource}
+                                layout="vertical"
+                                style={{ marginTop: '1rem' }}
+                            >
+                                <Form.Item
+                                    name="title"
+                                    label="Title"
+                                    rules={[{ required: true, message: 'Please enter a title' }]}
+                                >
+                                    <Input prefix={<FileOutlined />} placeholder="e.g., Presentation Slides" />
+                                </Form.Item>
+                                <Form.Item
+                                    name="description"
+                                    label="Description"
+                                >
+                                    <TextArea rows={2} placeholder="Optional description of the resource." />
+                                </Form.Item>
+                                <Form.Item
+                                    name="fileUrl"
+                                    label="Link (URL)"
+                                    rules={[{ required: true, message: 'Please enter a valid URL', type: 'url' }]}
+                                >
+                                    <Input placeholder="e.g., https://example.com/slides.pdf" />
+                                </Form.Item>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit" loading={resourceLoading} icon={<PlusOutlined />}>
+                                        Add Resource
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                            <Divider />
+                            <Title level={5}>Event Resources</Title>
+                            <List
+                                loading={resourceLoading}
+                                dataSource={resources}
+                                renderItem={item => (
+                                    <List.Item
+                                        actions={[
+                                            <Tooltip title="Delete Resource">
+                                                <DeleteOutlined
+                                                    style={{ color: 'red', cursor: 'pointer' }}
+                                                    onClick={() => handleDeleteResource(item.resource_id)}
+                                                />
+                                            </Tooltip>
+                                        ]}
+                                    >
+                                        <List.Item.Meta
+                                            title={<a href={item.file_url} target="_blank" rel="noopener noreferrer">{item.title}</a>}
+                                            description={item.description}
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                        </TabPane>
+                    </Tabs>
                 </TabPane>
             </Tabs>
         </Card>

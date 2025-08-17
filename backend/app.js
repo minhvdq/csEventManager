@@ -14,6 +14,7 @@ const studentRouter = require('./controller/student');
 const eventRegisterRouter = require('./controller/eventRegister');
 const authRouter = require('./controller/auth.route')
 const photoRouter = require('./controller/photo')
+const resourceRouter = require('./controller/resource')
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/eventHub/api/locations', locationRouter);
 app.use('/eventHub/api/students', studentRouter);
 app.use('/eventHub/api/eventRegister', eventRegisterRouter);
 app.use('/eventHub/api/photo', photoRouter);
+app.use('/eventHub/api/resource', resourceRouter);
 app.use('/eventHub/api/auth', authRouter)
 
 // === Serve Static Files ===

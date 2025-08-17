@@ -103,6 +103,7 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
                 {managingEvent ? (
                     <EventManager 
                         event={managingEvent}
+                        setEvents={setEvents}
                         togglePage={() => toggleManagePage(null)}
                         curUser={curUser}
                         handleDeleteEventLocal={handleDeleteEventLocal}
