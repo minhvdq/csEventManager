@@ -26,7 +26,8 @@ const allowedOrigins = [
     'http://127.0.0.1:3000',
     'http://138.234.44.100',
     'http://cs100.cc.gettysburg.edu',
-    'http://acm.gettysburg.edu'
+    'http://acm.gettysburg.edu',
+    'https://acm.gettysburg.edu'
 ];
 
 app.use((req, res, next) => {
