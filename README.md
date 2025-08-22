@@ -2,7 +2,7 @@
 
 A comprehensive event management system designed for the Computer Science department at Gettysburg College. This full-stack web application allows students and faculty to create, manage, and register for academic events with advanced features like location management, resume uploads, and automated email notifications.
 
-**🌐 Live Demo:** [http://acm.gettysburg.edu/eventHub](http://acm.gettysburg.edu/eventHub)  
+**🌐 Live Demo:** [https://acm.gettysburg.edu/eventHub](https://acm.gettysburg.edu/eventHub)  
 **📂 GitHub Repository:** [https://github.com/minhvdq/csEventManager](https://github.com/minhvdq/csEventManager)
 
 ---

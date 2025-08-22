@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 const config = require('../utils/config')
 const {frontendBase} = require('../utils/homeUrl')
 
-const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'http://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
+const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'https://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
  
 
 const getRegistrationsForEvent = async (eventId) => {
@@ -39,7 +39,7 @@ const registerWithEmail = async ({eventId, email}) => {
     const hashedToken = await bcrypt.hash(newToken, Number(config.BCRYPT_SALT))
     try{
         await RegisterToken.create({eventId, email, token: hashedToken})
-        const link = process.env.NODE_ENV === 'development' ? `${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}` : `http://acm.gettysburg.edu${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}`
+        const link = process.env.NODE_ENV === 'development' ? `${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}` : `https://acm.gettysburg.edu${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}`
         mailService.sendEmail(
             email,
             "Register for Event",

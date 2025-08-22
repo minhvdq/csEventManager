@@ -9,7 +9,7 @@ const Token = require('../dataaccess/token')
 const bcryptSalt = process. env.BCRYPT_SALT;
 // const JWTSecret = process.env.SECRET;
 const clientURL = `/eventHub/PasswordReset/ui_assets/index.html`;
-const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'http://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
+const logUrl = process.env.NODE_ENV === 'development' ? 'https://localhost:3000/eventHub/assets/acm_logo.png' : 'https://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
 
 const requestPasswordReset = async (email) => {
     const user = await User.getByEmail( email );
@@ -23,7 +23,7 @@ const requestPasswordReset = async (email) => {
   
     await Token.create(user.user_id, hash)
 
-    const prefix = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://acm.gettysburg.edu'
+    const prefix = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://acm.gettysburg.edu'
   
     const link = `${prefix}${clientURL}?token=${resetToken}&id=${user.user_id}`;
   
