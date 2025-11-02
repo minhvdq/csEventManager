@@ -12,6 +12,10 @@ const EMAIL_HOST = process.env.EMAIL_HOST
 const EMAIL_USER = process.env.EMAIL_USER
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
 const BCRYPT_SALT = process.env.BCRYPT_SALT
+const REDIS_USERNAME = process.env.REDIS_USERNAME
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD
+const REDIS_HOST = process.env.REDIS_HOST
+const REDIS_PORT = process.env.REDIS_PORT
 
 module.exports = { 
                     // MONGODB_URI, 
@@ -25,5 +29,9 @@ module.exports = {
                     EMAIL_PASSWORD, 
                     EMAIL_USER, 
                     EMAIL_HOST,
-                    BCRYPT_SALT
+                    BCRYPT_SALT,
+                    REDIS_USERNAME,
+                    REDIS_PASSWORD,
+                    REDIS_HOST,
+                    REDIS_PORT
                 }

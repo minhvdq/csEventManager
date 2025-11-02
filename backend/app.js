@@ -63,7 +63,6 @@ app.use('/eventHub/api/eventRegister', eventRegisterRouter);
 app.use('/eventHub/api/photo', photoRouter);
 app.use('/eventHub/api/resource', resourceRouter);
 app.use('/eventHub/api/auth', authRouter)
-
 // === Serve Static Files ===
 
 app.use(
