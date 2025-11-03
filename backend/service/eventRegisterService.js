@@ -3,11 +3,11 @@ const studentService = require('./studentService')
 const Student = require('../dataaccess/student')
 const Event = require('../dataaccess/event') // Assuming you have an Event DAL
 const mailService = require('../utils/email/sendEmail')
-const RegisterToken = require('../dataaccess/registerToken')
 const crypto = require('crypto')
 const bcrypt = require('bcrypt')
 const config = require('../utils/config')
 const {frontendBase} = require('../utils/homeUrl')
+const client = require('../utils/redis')
 
 const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'https://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
  
@@ -30,15 +30,14 @@ const getRegistrationsForStudent = async (studentId) => {
 }
 
 const registerWithEmail = async ({eventId, email}) => {
-    const token = await RegisterToken.getByEventIdAndEmail({eventId, email})
-    if(token){
-        console.log(token)
-        RegisterToken.deleteByEventIdAndEmail(token.event_id, token.email)
-    }
-    const newToken = crypto.randomBytes(32).toString("hex")
-    const hashedToken = await bcrypt.hash(newToken, Number(config.BCRYPT_SALT))
+    const key = `registerToken:${eventId}:${email}`
     try{
-        await RegisterToken.create({eventId, email, token: hashedToken})
+        await client.del(key)
+        const newToken = crypto.randomBytes(32).toString("hex")
+        const hashedToken = await bcrypt.hash(newToken, Number(config.BCRYPT_SALT))
+
+
+        await client.set(key, hashedToken, {EX: 60 * 60}) // 1 hour
         const link = process.env.NODE_ENV === 'development' ? `${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}` : `https://acm.gettysburg.edu${frontendBase}/register?token=${newToken}&eventId=${eventId}&email=${email}`
         mailService.sendEmail(
             email,
@@ -54,12 +53,13 @@ const registerWithEmail = async ({eventId, email}) => {
 }
 
 const checkStudentWithEmail = async ({eventId, email, token}) => {
-    const dbToken = await RegisterToken.getByEventIdAndEmail({eventId, email})
+    const key = `registerToken:${eventId}:${email}`
+    const dbToken = await client.get(key)
     // console.log("Token is: " + JSON.stringify(dbToken))
     if(!dbToken){
         throw new Error("token is missing or not recognized!")
     }
-    const isTokenValid = await bcrypt.compare(token, dbToken.token)
+    const isTokenValid = await bcrypt.compare(token, dbToken)
     // console.log("Token is valid: " + isTokenValid)
     if(!isTokenValid){
         throw new Error("token is invalid!")
@@ -81,13 +81,14 @@ const registerWithExistingStudent = async (body) => {
     } = body 
     console.log("Body is: " + JSON.stringify(body))
     try{
-        const dbToken = await RegisterToken.getByEventIdAndEmail({eventId, email})
+        const key = `registerToken:${eventId}:${email}`
+        const dbToken = await client.get(key)
         console.log("Token is: " + JSON.stringify(dbToken))
         if(!dbToken){
             console.log("Token is missing or not recognized!")
             throw new Error("token is missing or not recognized!")
         }
-        const isTokenValid = await bcrypt.compare(token, dbToken.token)
+        const isTokenValid = await bcrypt.compare(token, dbToken)
         console.log("Token is valid: " + isTokenValid)
         if(!isTokenValid){
             console.log("Token is invalid!")
@@ -138,7 +139,7 @@ const registerWithExistingStudent = async (body) => {
             "/templates/successfullyRegisterEvent.handlebars"
         )
         console.log("Deleting token")
-        await RegisterToken.deleteByEventIdAndEmail(eventId, email)
+        await client.del(key)
         return registerResponse;
     }catch(e){
         console.log("Error sending email: " + e)
@@ -161,11 +162,12 @@ const registerWithNewStudent = async (body) => {
     } = body
     console.log("Body is: " + JSON.stringify({...body, resume: null}))
 
-    const dbToken = await RegisterToken.getByEventIdAndEmail({eventId, email: schoolEmail})
+    const key = `registerToken:${eventId}:${schoolEmail}`
+    const dbToken = await client.get(key)
     if(!dbToken){
         throw new Error("token is missing or not recognized!")
     }
-    const isTokenValid = await bcrypt.compare(token, dbToken.token)
+    const isTokenValid = await bcrypt.compare(token, dbToken)
     if(!isTokenValid){
         throw new Error("token is invalid!")
     }
@@ -198,8 +200,7 @@ const registerWithNewStudent = async (body) => {
             { event_name: event.name, name: firstName, logoUrl: logUrl },
             "/templates/successfullyRegisterEvent.handlebars"
         )
-        await RegisterToken.deleteByEventIdAndEmail(eventId, schoolEmail)
-    
+        await client.del(key)
         return registerResponse
     }catch(e) {
         console.log("Error creating new student registration: " + e)
