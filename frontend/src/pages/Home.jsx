@@ -12,10 +12,19 @@ const { Title } = Typography;
 const currentYear = new Date().getFullYear();
 const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear - i);
 
+// Parse datetime string - handles both MySQL format (YYYY-MM-DD HH:MM:SS) and ISO 8601 format
+// new Date() correctly handles ISO 8601 strings and converts them to local timezone.
+// For MySQL format strings without timezone, we parse them as local time (consistent with EventCard.jsx).
 const parseMySqlDateTimeAsLocal = (dateTimeString) => {
     if (!dateTimeString) return null;
-    const localDateTimeString = dateTimeString.slice(0, 19).replace('T', ' ');
-    return new Date(localDateTimeString);
+    // If it's already a Date object, return it
+    if (dateTimeString instanceof Date) return dateTimeString;
+    
+    // new Date() handles ISO 8601 format (with 'T') correctly
+    // For MySQL format (YYYY-MM-DD HH:MM:SS), replace space with 'T' to make it ISO-like
+    // This ensures consistent parsing behavior across browsers
+    const normalized = dateTimeString.slice(0, 19).replace(' ', 'T');
+    return new Date(normalized);
 };
 
 export default function Home({ events, setEvents, curUser, handleLogout }) {
