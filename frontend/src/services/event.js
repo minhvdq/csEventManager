@@ -45,6 +45,7 @@ const createEvent = async (body) => {
     formData.append("onCampus", body.onCampus);
     formData.append("isColloquium", body.isColloquium);
     formData.append("capacity", body.isLimited ? body.capacity : "");
+    formData.append("sendNoti", body.sendNoti);
     if (body.poster) {
         formData.append("poster", body.poster);
     }

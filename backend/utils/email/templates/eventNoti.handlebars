@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #eeeeee;
+            }
+            .content {
+                padding: 20px 0;
+                line-height: 1.6;
+                color: #333333;
+            }
+            .button-container {
+                text-align: center;
+                margin: 30px 0;
+            }
+            .button {
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #007bff;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            .footer {
+                text-align: center;
+                padding-top: 20px;
+                border-top: 1px solid #eeeeee;
+                font-size: 12px;
+                color: #888888;
+            }
+            .logo {
+                margin-top: 15px;
+                max-width: 100px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <div class="header">
+                <h2>New Event: **{{event_name}}**</h2>
+            </div>
+            <div class="content">
+                <p>Hi,</p>
+                <p>A new event from ACM is scheduled as follows:</p>
+                
+                <p>
+                    {{#if isColloquium}}
+                        **Type**: This is a colloquium
+                    {{else}}
+                        **Type**: This is not a colloquium
+                    {{/if}}
+                </p>
+
+                <p>**Description**: {{description}}</p>
+                <p>**Location**: {{location}}</p>
+                <p>**Start Time**: {{start_time}}</p>
+                <p>**End Time**: {{end_time}}</p>
+                <p>**Deadline**: {{deadline}}</p>
+                <p>{{#if capacity}}**Capacity**: {{capacity}}{{else}}**Capacity**: No capacity limit{{/if}}</p>
+
+                <p>Click the button below for more details:</p>
+                <div class="button-container">
+                    <a href="https://acm.gettysburg.edu/eventHub" class="button">View Event</a>
+                </div>
+            </div>
+            <div class="footer">
+                <p>Contact: <a href="mailto:gburgacm01@gmail.com">gburgacm01@gmail.com</a></p>
+                <img src="{{logoUrl}}" alt="ACM Logo" class="logo">
+            </div>
+        </div>
+    </body>
+</html>

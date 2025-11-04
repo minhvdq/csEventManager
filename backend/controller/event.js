@@ -63,7 +63,8 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             onCampus,
             isColloquium,
             capacity,
-            deadline
+            deadline,
+            sendNoti
         } = req.body;
     
         const event = await eventService.createEvent({
@@ -86,7 +87,8 @@ eventRouter.post('/', upload.single('poster'), async (req, res) => {
             createdBy: userId,
             posterData: req.file?.buffer || null,
             capacity: capacity || null,
-            deadline: deadline
+            deadline: deadline,
+            sendNoti: sendNoti === "true",
         });
     
         res.status(201).json(event);

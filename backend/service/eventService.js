@@ -1,7 +1,11 @@
 const Event = require('../dataaccess/event')
 const Location = require('../dataaccess/location')
 const EventAttendance = require('../dataaccess/eventAttendance')
+const studentService = require('./studentService')
+const mailService = require('../utils/email/sendEmail')
 const client = require('../utils/redis')
+
+const logUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000/eventHub/assets/acm_logo.png' : 'https://acm.gettysburg.edu/eventHub/assets/acm_logo.png'
 
 const CACHE_TIME_TO_LIVE = 60 * 20
 
@@ -103,6 +107,8 @@ const createEvent = async (body) => {
       locationId = locationMetadata.insertId;
     }
 
+    const location = await Location.getById(locationId)
+
     const{
       name,
       description,
@@ -115,10 +121,11 @@ const createEvent = async (body) => {
       createdBy,
       posterData,
       capacity,
-      deadline
+      deadline,
+      sendNoti
     } = body
   
-    return await Event.create({
+    const addedEvent = await Event.create({
       name,
       description,
       locationId,
@@ -133,7 +140,24 @@ const createEvent = async (body) => {
       capacity,
       deadline
     })
+
+
+    if(sendNoti){
+      console.log("Sending Notification to all students")
+      const students = await studentService.getAll()
+      emailString = "";
+      for(const student of students){
+        if(student.school_email){
+          emailString += student.school_email + ",";
+        }
+      }
+
+      const locationShort = `${location.place_name} - ${location.address} - Room ${location.room}`
+      mailService.sendEmail(emailString, `Coming event: ${name}`, {event_name: name, logoUrl: logUrl, isColloquium, capacity, description, location: locationShort, start_time: startTime, end_time: endTime, deadline}, "/templates/eventNoti.handlebars")
+      console.log(students.length + " students notified")
+    }
   
+  return addedEvent
 };
 
 const updateDeadline = async (deadline, eventId) => {

@@ -269,6 +269,10 @@ export default function CreateEventForm({curUser}) {
                         <Switch />
                     </Form.Item>
 
+                    <Form.Item name="sendNoti" label="Send notification to all students?" valuePropName="checked">
+                        <Switch />
+                    </Form.Item>
+
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="mt-3">
                             Create Event
