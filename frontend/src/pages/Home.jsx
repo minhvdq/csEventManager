@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Input, Select, Button, Typography, Spin } from "antd";
+import { Input, Select, Button, Typography, Spin, Form, message } from "antd";
+import { MessageOutlined } from "@ant-design/icons";
 import EventCard from "../components/event/EventCard";
 import EventRegisterPage from "../components/eventAttendance/EventRegisterPage";
 import EventManager from "../components/event/EventManager";
 import NavBar from "../components/NavBar";
 import { frontendBase } from "../utils/homeUrl";
+import sendFeedbackService from "../services/sendFeedback";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -38,6 +40,9 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
 
     const [registeringEvent, setRegisteringEvent] = useState(null);
     const [managingEvent, setManagingEvent] = useState(null);
+    const [feedbackForm] = Form.useForm();
+    const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -103,6 +108,30 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
     const handleClickCreateEvent = (e) => {
         e.preventDefault();
         window.location.href = `${frontendBase}/create`;
+    };
+
+    const toggleFeedbackForm = () => {
+        setShowFeedbackForm(!showFeedbackForm);
+        if (showFeedbackForm) {
+            feedbackForm.resetFields();
+        }
+    };
+
+    const handleFeedbackSubmit = async (values) => {
+        setFeedbackLoading(true);
+        try {
+            await sendFeedbackService.sendFeedback({
+                name: values.name || undefined,
+                message: values.message
+            });
+            message.success('Thank you for your feedback! We appreciate your input.');
+            feedbackForm.resetFields();
+            setShowFeedbackForm(false);
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Failed to send feedback. Please try again.');
+        } finally {
+            setFeedbackLoading(false);
+        }
     };
 
     return (
@@ -172,6 +201,102 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
                         </Spin>
                     </>
                 )}
+            </div>
+            
+            {/* Feedback Chat Button and Form */}
+            <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 1000 }}>
+                {showFeedbackForm && (
+                    <div 
+                        style={{
+                            position: 'absolute',
+                            bottom: '80px',
+                            right: '0',
+                            width: '320px',
+                            background: 'white',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                            padding: '20px',
+                            marginBottom: '10px'
+                        }}
+                    >
+                        <Form
+                            form={feedbackForm}
+                            onFinish={handleFeedbackSubmit}
+                            layout="vertical"
+                        >
+                            <div style={{ marginBottom: '12px' }}>
+                                <Typography.Text type="secondary" style={{ fontSize: '13px' }}>
+                                    💬 Share your feedback so we can improve!
+                                </Typography.Text>
+                            </div>
+                            
+                            <Form.Item
+                                label="Name (Optional)"
+                                name="name"
+                            >
+                                <Input 
+                                    placeholder="Your name" 
+                                    size="middle"
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item
+                                label="Message"
+                                name="message"
+                                rules={[
+                                    { required: true, message: 'Please enter your feedback message' },
+                                    { min: 5, message: 'Message must be at least 5 characters' }
+                                ]}
+                            >
+                                <Input.TextArea 
+                                    placeholder="Tell us what you think..."
+                                    rows={4}
+                                    showCount
+                                    maxLength={500}
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item style={{ marginBottom: 0 }}>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <Button 
+                                        onClick={toggleFeedbackForm}
+                                        size="middle"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button 
+                                        type="primary" 
+                                        htmlType="submit"
+                                        loading={feedbackLoading}
+                                        size="middle"
+                                        style={{ background: '#5890F1', borderColor: '#5890F1' }}
+                                    >
+                                        Submit
+                                    </Button>
+                                </div>
+                            </Form.Item>
+                        </Form>
+                    </div>
+                )}
+                
+                <Button
+                    type="primary"
+                    shape="circle"
+                    size="large"
+                    icon={<MessageOutlined />}
+                    onClick={toggleFeedbackForm}
+                    style={{
+                        width: '60px',
+                        height: '60px',
+                        background: '#5890F1',
+                        borderColor: '#5890F1',
+                        boxShadow: '0 4px 12px rgba(88, 144, 241, 0.4)',
+                        fontSize: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                />
             </div>
         </div>
     );

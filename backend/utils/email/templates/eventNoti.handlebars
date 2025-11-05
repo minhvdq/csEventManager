@@ -53,7 +53,7 @@
     <body>
         <div class="email-container">
             <div class="header">
-                <h2>New Event: **{{event_name}}**</h2>
+                <h2>New Event: <strong>{{event_name}}</strong></h2>
             </div>
             <div class="content">
                 <p>Hi,</p>
@@ -61,18 +61,18 @@
                 
                 <p>
                     {{#if isColloquium}}
-                        **Type**: This is a colloquium
+                        <strong>Type:</strong> This is a colloquium
                     {{else}}
-                        **Type**: This is not a colloquium
+                        <strong>Type:</strong> This is not a colloquium
                     {{/if}}
                 </p>
 
-                <p>**Description**: {{description}}</p>
-                <p>**Location**: {{location}}</p>
-                <p>**Start Time**: {{start_time}}</p>
-                <p>**End Time**: {{end_time}}</p>
-                <p>**Deadline**: {{deadline}}</p>
-                <p>{{#if capacity}}**Capacity**: {{capacity}}{{else}}**Capacity**: No capacity limit{{/if}}</p>
+                <p><strong>Description:</strong> {{description}}</p>
+                <p><strong>Location:</strong> {{location}}</p>
+                <p><strong>Start Time:</strong> {{start_time}}</p>
+                <p><strong>End Time:</strong> {{end_time}}</p>
+                <p><strong>Deadline:</strong> {{deadline}}</p>
+                <p>{{#if capacity}}<strong>Capacity:</strong> {{capacity}}{{else}}<strong>Capacity:</strong> No capacity limit{{/if}}</p>
 
                 <p>Click the button below for more details:</p>
                 <div class="button-container">

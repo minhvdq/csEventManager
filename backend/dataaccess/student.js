@@ -64,11 +64,17 @@ const updateResume = async (studentId, resumeTitle, resume) => {
     return updateRespone
 }
 
+const deleteByEmail = async (email) => {
+    const [deleteResponse] = await db.query(`DELETE FROM students WHERE school_email = ?`, [email])
+    return deleteResponse
+}
+
 module.exports = {
     getAll,
     getById,
     getByEmail,
     create,
     updateMajorStatus,
-    updateResume
+    updateResume,
+    deleteByEmail
 }

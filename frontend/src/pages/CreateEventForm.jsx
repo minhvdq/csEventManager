@@ -239,7 +239,7 @@ export default function CreateEventForm({curUser}) {
                         </Form.Item>
 
                         <Form.Item label="Room (Optional)" name="room">
-                            <Input className="form-control" maxLength={10} />
+                            <Input className="form-control" />
                         </Form.Item>
                     </>
                     )}

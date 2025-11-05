@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up for Event Notifications</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .email-wrapper {
+            width: 100%;
+            background-color: #f5f7fa;
+            padding: 40px 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #5890F1 0%, #4a7bc8 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .logo-container {
+            margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 120px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .content {
+            padding: 40px 30px;
+            color: #333333;
+        }
+        .content h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+        }
+        .content p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #555555;
+            line-height: 1.7;
+        }
+        .highlight {
+            background-color: #fff4e6;
+            border-left: 4px solid #5890F1;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        .highlight p {
+            margin: 0;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        .button-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #5890F1 0%, #4a7bc8 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(88, 144, 241, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(88, 144, 241, 0.4);
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #555555;
+        }
+        .info-box li {
+            margin: 8px 0;
+            font-size: 15px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .footer a {
+            color: #5890F1;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .footer-logo {
+            margin-top: 20px;
+        }
+        .footer-logo img {
+            max-width: 100px;
+            height: auto;
+            opacity: 0.8;
+        }
+        .expiry-notice {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #856404;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                border-radius: 0;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .button {
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+            <div class="header">
+                <div class="logo-container">
+                    <img src="{{logoUrl}}" alt="ACM Logo" class="logo">
+                </div>
+                <h1>Join ACM Event Notifications</h1>
+            </div>
+            
+            <div class="content">
+                <h2>Welcome to ACM EventHub!</h2>
+                
+                <p>Thank you for your interest in staying updated with our events. We're excited to have you join our community!</p>
+                
+                <div class="highlight">
+                    <p>📧 Complete your registration to receive notifications about upcoming events, workshops, and opportunities.</p>
+                </div>
+                
+                <p>By signing up, you'll receive:</p>
+                
+                <div class="info-box">
+                    <ul>
+                        <li>📅 <strong>Event Notifications</strong> - Stay informed about upcoming ACM events</li>
+                        <li>🎓 <strong>Workshop Announcements</strong> - Learn about educational opportunities</li>
+                        <li>🔔 <strong>Important Updates</strong> - Get timely information about event changes</li>
+                        <li>🎯 <strong>Registration Reminders</strong> - Never miss a deadline</li>
+                    </ul>
+                </div>
+                
+                <p>Click the button below to complete your registration and start receiving notifications:</p>
+                
+                <div class="button-container">
+                    <a href="{{link}}" class="button">Complete Registration</a>
+                </div>
+                
+                <div class="expiry-notice">
+                    ⏰ <strong>Important:</strong> This link will expire in 1 hour for security reasons. If you didn't request this email, you can safely ignore it.
+                </div>
+                
+                <p style="margin-top: 25px; font-size: 14px; color: #6c757d;">
+                    If the button doesn't work, you can copy and paste this link into your browser:<br>
+                    <a href="{{link}}" style="color: #5890F1; word-break: break-all;">{{link}}</a>
+                </p>
+            </div>
+            
+            <div class="footer">
+                <p><strong>ACM Gettysburg College</strong></p>
+                <p>Stay connected with our community of computer science enthusiasts!</p>
+                <p>
+                    Questions? Contact us at 
+                    <a href="mailto:gburgacm01@gmail.com">gburgacm01@gmail.com</a>
+                </p>
+                <div class="footer-logo">
+                    <img src="{{logoUrl}}" alt="ACM Logo">
+                </div>
+                <p style="margin-top: 20px; font-size: 12px; color: #adb5bd;">
+                    © 2024 ACM Gettysburg College. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
