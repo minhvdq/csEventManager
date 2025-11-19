@@ -83,6 +83,9 @@ export default function NavBar({ curUser, handleLogout }) {
                                     Home
                                 </a>
                             </li>
+                            <li>
+                                <a href={`${homeUrl}/signupNoti`}>Student Signup</a>
+                            </li>
                              {/* Admin link for mobile */}
                             {curUser && curUser.isAdmin && (
                                 <li>
