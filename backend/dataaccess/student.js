@@ -69,6 +69,11 @@ const deleteByEmail = async (email) => {
     return deleteResponse
 }
 
+const deleteById = async (id) => {
+    const [deleteResponse] = await db.query(`DELETE FROM students WHERE id = ?`, [id])
+    return deleteResponse
+}
+
 module.exports = {
     getAll,
     getById,
@@ -76,5 +81,6 @@ module.exports = {
     create,
     updateMajorStatus,
     updateResume,
-    deleteByEmail
+    deleteByEmail,
+    deleteById
 }

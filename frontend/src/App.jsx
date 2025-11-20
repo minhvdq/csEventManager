@@ -12,6 +12,7 @@ import Admin from './pages/Admin'
 import CreateEventForm from './pages/CreateEventForm';
 import EventRegister from './pages/EventRegister';
 import SignupNoti from './pages/SignupNoti';
+import StudentsManage from './pages/StudentsManage';
 
 function App() {
   const [events, setEvents] = useState([])
@@ -51,7 +52,8 @@ function App() {
         <Route path='/admin' element={<Admin curUser={curUser} handleLogout={handleLogout}/>} />
         <Route path='/register' element={<EventRegister/>}/>
         <Route path='/signupNoti' element={<SignupNoti/>}/>
-        <Route paht='*' element={<NotFound/>}/>
+        <Route path='/studentsManage' element={<StudentsManage curUser={curUser} handleLogout={handleLogout}/>}/>
+        <Route path='*' element={<NotFound/>}/>
       </Routes>
     </BrowserRouter>
   )

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Input, Select, Button, Typography, Spin, Form, message } from "antd";
-import { MessageOutlined } from "@ant-design/icons";
+import { Input, Select, Button, Typography, Spin, Form, message, Modal } from "antd";
+import { MessageOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import EventCard from "../components/event/EventCard";
 import EventRegisterPage from "../components/eventAttendance/EventRegisterPage";
 import EventManager from "../components/event/EventManager";
@@ -43,6 +43,7 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
     const [feedbackForm] = Form.useForm();
     const [showFeedbackForm, setShowFeedbackForm] = useState(false);
     const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [showFAQModal, setShowFAQModal] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -203,8 +204,102 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
                 )}
             </div>
             
-            {/* Feedback Chat Button and Form */}
+            {/* FAQ and Feedback Buttons */}
             <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 1000 }}>
+                {/* FAQ Button */}
+                <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        type="primary"
+                        shape="circle"
+                        size="large"
+                        icon={<QuestionCircleOutlined />}
+                        onClick={() => setShowFAQModal(true)}
+                        style={{
+                            width: '60px',
+                            height: '60px',
+                            background: '#52c41a',
+                            borderColor: '#52c41a',
+                            boxShadow: '0 4px 12px rgba(82, 196, 26, 0.4)',
+                            fontSize: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    />
+                </div>
+
+                {/* FAQ Modal */}
+                <Modal
+                    title={
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <QuestionCircleOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
+                            <span>Frequently Asked Questions - Account Types & Authority System</span>
+                        </div>
+                    }
+                    open={showFAQModal}
+                    onCancel={() => setShowFAQModal(false)}
+                    footer={[
+                        <Button key="close" type="primary" onClick={() => setShowFAQModal(false)}>
+                            Got it, thanks!
+                        </Button>
+                    ]}
+                    width={700}
+                >
+                    <div style={{ padding: '10px 0' }}>
+                        <Typography.Paragraph style={{ fontSize: '16px', marginBottom: '24px', color: '#555' }}>
+                            Many users have questions about the different account types on this website. 
+                            Here's a simple explanation of what each account type can do:
+                        </Typography.Paragraph>
+
+                        <Typography.Title level={4} style={{ color: '#5890F1', marginTop: '24px', marginBottom: '12px' }}>
+                            🎓 Student Account
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ marginBottom: '20px', lineHeight: '1.8' }}>
+                            Students are for anyone who wants to receive notifications about upcoming events and sign up to attend them. 
+                            This account type has no administrative authority—you can only view events, receive notifications, and register to attend. 
+                            Your information is saved so you don't need to re-enter it every time you sign up for a new event.
+                        </Typography.Paragraph>
+
+                        <Typography.Title level={4} style={{ color: '#5890F1', marginTop: '24px', marginBottom: '12px' }}>
+                            👤 User Account
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ marginBottom: '20px', lineHeight: '1.8' }}>
+                            Users are for ACM students who help organize events. With this account, you can create and manage events, 
+                            view who has registered, and handle event-related tasks. However, you <strong>cannot</strong> create or delete other User or Admin accounts.
+                            <br/><br/>
+                            If you also want to receive notifications or sign up for events as an attendee, you'll need a separate Student account as well.
+                        </Typography.Paragraph>
+
+                        <Typography.Title level={4} style={{ color: '#5890F1', marginTop: '24px', marginBottom: '12px' }}>
+                            🔑 Admin Account
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ marginBottom: '20px', lineHeight: '1.8' }}>
+                            Admins are for professors and high-level ACM officials who need full control over the platform. 
+                            With this account, you can do everything a User can do (manage events) plus you can create and delete User and Admin accounts.
+                            <br/><br/>
+                            If you also want to receive notifications or sign up for events as an attendee, you'll need a separate Student account as well.
+                        </Typography.Paragraph>
+
+                        <div style={{ 
+                            background: '#f0f9ff', 
+                            borderLeft: '4px solid #5890F1', 
+                            padding: '15px 20px', 
+                            marginTop: '24px',
+                            borderRadius: '4px'
+                        }}>
+                            <Typography.Text strong style={{ color: '#2c3e50' }}>
+                                💡 Why separate Student accounts?
+                            </Typography.Text>
+                            <Typography.Paragraph style={{ marginBottom: 0, marginTop: '8px', lineHeight: '1.8' }}>
+                                Student accounts are designed to be quick and convenient to create. If you have a User or Admin account 
+                                and want to receive notifications or attend events, you can simply register as a Student using the same email address. 
+                                This keeps the signup process simple for everyone!
+                            </Typography.Paragraph>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Feedback Chat Button and Form */}
                 {showFeedbackForm && (
                     <div 
                         style={{
@@ -279,6 +374,7 @@ export default function Home({ events, setEvents, curUser, handleLogout }) {
                     </div>
                 )}
                 
+                {/* Feedback Button */}
                 <Button
                     type="primary"
                     shape="circle"
