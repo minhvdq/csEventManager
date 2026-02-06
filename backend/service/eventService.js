@@ -18,11 +18,14 @@ const getAllEvents = async () => {
 
     const key = 'allevents'
     const cachedEvents = await client.get(key)
-    if(cachedEvents){
-        return JSON.parse(cachedEvents)
-    }else{
+    // if(cachedEvents){
+    //     console.log("asdadsa")
+    //     return JSON.parse(cachedEvents)
+    // }else{
       try{
+        console.log("Fetching")
         const events = await Event.getAll()
+        console.log("Event fetched")
 
         const locations = await Location.getAll()
       
@@ -42,14 +45,14 @@ const getAllEvents = async () => {
             }
         })
 
-        await client.set(key, JSON.stringify(modifiedEvents), {EXE: CACHE_TIME_TO_LIVE})
+        // await client.set(key, JSON.stringify(modifiedEvents), {EXE: CACHE_TIME_TO_LIVE})
       
         return modifiedEvents
       }catch(e){
         console.log("Error getting all events: " + e)
         throw e
       } 
-    }
+    // }
 };
 
 const getEventById = async (id) => {
