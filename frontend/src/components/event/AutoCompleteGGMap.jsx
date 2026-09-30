@@ -70,8 +70,10 @@ export default function NewAutoComplete({
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasFetched, setHasFetched] = useState(false);
 
   const abortControllerRef = useRef(null);
+  const containerRef = useRef(null);
 
   const API_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
@@ -143,6 +145,7 @@ export default function NewAutoComplete({
         }
 
         setSuggestions(data.results);
+        setHasFetched(true);
       } catch (err) {
         if (err.name === "AbortError") {
           return;
@@ -152,6 +155,7 @@ export default function NewAutoComplete({
 
         setSuggestions([]);
         setError(err.message || "Failed to search for addresses.");
+        setHasFetched(true);
       } finally {
         if (abortControllerRef.current === controller) {
           setLoading(false);
@@ -168,6 +172,17 @@ export default function NewAutoComplete({
     return () => {
       abortControllerRef.current?.abort();
     };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setSuggestions([]);
+        setHasFetched(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSelect = (place) => {
@@ -202,20 +217,17 @@ export default function NewAutoComplete({
     setLng(place.lon);
   };
 
-  const shouldShowDropdown =
-    loading ||
-    Boolean(error) ||
-    suggestions.length > 0 ||
-    query.trim().length >= MIN_QUERY_LENGTH;
+  const shouldShowDropdown = loading || Boolean(error) || suggestions.length > 0 || (hasFetched && query.trim().length >= MIN_QUERY_LENGTH);
 
   return (
-    <div className="w-100 position-relative">
+    <div className="w-100 position-relative" ref={containerRef}>
       <input
         type="text"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           setError("");
+          setHasFetched(false);
         }}
         placeholder="Enter address"
         autoComplete="off"
@@ -287,7 +299,7 @@ export default function NewAutoComplete({
           {!loading &&
             !error &&
             suggestions.length === 0 &&
-            query.trim().length >= MIN_QUERY_LENGTH && (
+            hasFetched && (
               <div className="px-3 py-2 text-muted">
                 No addresses found.
               </div>
