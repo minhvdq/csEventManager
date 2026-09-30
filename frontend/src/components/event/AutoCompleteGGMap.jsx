@@ -78,7 +78,6 @@ export default function NewAutoComplete({
   useEffect(() => {
     const trimmedQuery = query.trim();
 
-    // Clear results for short queries
     if (trimmedQuery.length < MIN_QUERY_LENGTH) {
       abortControllerRef.current?.abort();
       setSuggestions([]);
@@ -87,18 +86,16 @@ export default function NewAutoComplete({
       return;
     }
 
-    // Catch missing API key early
     if (!API_KEY) {
       setSuggestions([]);
       setLoading(false);
       setError(
-        "Geoapify API key is missing. Check VITE_GEOAPIFY_API_KEY in your environment file."
+        "Geoapify API key is missing. Check VITE_GEOAPIFY_API_KEY in your .env file."
       );
       return;
     }
 
     const timeoutId = setTimeout(async () => {
-      // Cancel previous request
       abortControllerRef.current?.abort();
 
       const controller = new AbortController();
@@ -116,7 +113,7 @@ export default function NewAutoComplete({
         });
 
         const response = await fetch(
-          `https://api.geoapify.com/v1/geocode/autocomplete?${params}`,
+          `https://api.geoapify.com/v1/geocode/autocomplete?${params.toString()}`,
           {
             signal: controller.signal,
           }
@@ -129,7 +126,7 @@ export default function NewAutoComplete({
             const body = await response.text();
             details = body ? ` - ${body}` : "";
           } catch {
-            // Ignore response parsing errors
+            // Ignore response parsing failure
           }
 
           throw new Error(
@@ -139,16 +136,14 @@ export default function NewAutoComplete({
 
         const data = await response.json();
 
-        // Make sure the response shape is what we expect
-        if (!Array.isArray(data)) {
+        if (!Array.isArray(data.results)) {
           throw new Error(
             `Unexpected Geoapify response format: ${JSON.stringify(data)}`
           );
         }
 
-        setSuggestions(data);
+        setSuggestions(data.results);
       } catch (err) {
-        // AbortError is expected when the user keeps typing
         if (err.name === "AbortError") {
           return;
         }
@@ -158,7 +153,6 @@ export default function NewAutoComplete({
         setSuggestions([]);
         setError(err.message || "Failed to search for addresses.");
       } finally {
-        // Only update loading state if this is still the latest request
         if (abortControllerRef.current === controller) {
           setLoading(false);
         }
@@ -170,7 +164,6 @@ export default function NewAutoComplete({
     };
   }, [query, API_KEY]);
 
-  // Abort active request when component unmounts
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
@@ -183,10 +176,14 @@ export default function NewAutoComplete({
       typeof place.lat !== "number" ||
       typeof place.lon !== "number"
     ) {
-      console.error("Invalid Geoapify place:", place);
+      console.error("Invalid Geoapify place result:", place);
+
       setError(
-        `Selected result has invalid coordinates: ${JSON.stringify(place)}`
+        `Selected result does not contain valid coordinates: ${JSON.stringify(
+          place
+        )}`
       );
+
       return;
     }
 
@@ -205,9 +202,9 @@ export default function NewAutoComplete({
     setLng(place.lon);
   };
 
-  const showResults =
+  const shouldShowDropdown =
     loading ||
-    error ||
+    Boolean(error) ||
     suggestions.length > 0 ||
     query.trim().length >= MIN_QUERY_LENGTH;
 
@@ -224,7 +221,6 @@ export default function NewAutoComplete({
         autoComplete="off"
         className="form-control shadow-sm rounded-pill px-4 py-2"
         aria-label="Address search"
-        aria-expanded={showResults}
         style={{
           border: "1px solid #ccc",
           fontSize: "1rem",
@@ -233,7 +229,7 @@ export default function NewAutoComplete({
         }}
       />
 
-      {showResults && (
+      {shouldShowDropdown && (
         <div
           className="position-absolute w-100 bg-white border rounded shadow-sm mt-1"
           style={{
@@ -242,30 +238,28 @@ export default function NewAutoComplete({
             overflowY: "auto",
           }}
         >
-          {/* Loading */}
           {loading && (
             <div className="px-3 py-2 text-muted">
               Searching...
             </div>
           )}
 
-          {/* Error */}
           {!loading && error && (
             <div className="px-3 py-2 text-danger">
               <strong>Address search error</strong>
+
               <div className="small mt-1 text-break">
                 {error}
               </div>
             </div>
           )}
 
-          {/* Results */}
           {!loading &&
             !error &&
             suggestions.map((place) => (
               <button
                 key={
-                  place.place_id ??
+                  place.place_id ||
                   `${place.lat}-${place.lon}-${place.formatted}`
                 }
                 type="button"
@@ -290,7 +284,6 @@ export default function NewAutoComplete({
               </button>
             ))}
 
-          {/* No results */}
           {!loading &&
             !error &&
             suggestions.length === 0 &&
