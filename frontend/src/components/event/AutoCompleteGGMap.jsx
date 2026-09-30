@@ -58,7 +58,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const MIN_QUERY_LENGTH = 3;
-const DEBOUNCE_MS = 350;
+const DEBOUNCE_MS = 200;
 const RESULT_LIMIT = 5;
 
 export default function NewAutoComplete({
@@ -71,6 +71,7 @@ export default function NewAutoComplete({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasFetched, setHasFetched] = useState(false);
+  const [selected, setSelected] = useState(false);
 
   const abortControllerRef = useRef(null);
   const containerRef = useRef(null);
@@ -211,6 +212,8 @@ export default function NewAutoComplete({
     setQuery(formattedAddress);
     setSuggestions([]);
     setError("");
+    setHasFetched(false);
+    setSelected(true);
 
     setAddress(formattedAddress);
     setLat(place.lat);
@@ -228,16 +231,18 @@ export default function NewAutoComplete({
           setQuery(e.target.value);
           setError("");
           setHasFetched(false);
+          setSelected(false);
         }}
         placeholder="Enter address"
         autoComplete="off"
         className="form-control shadow-sm rounded-pill px-4 py-2"
         aria-label="Address search"
         style={{
-          border: "1px solid #ccc",
+          border: selected ? "1px solid #28a745" : "1px solid #ccc",
           fontSize: "1rem",
           outline: "none",
           width: "100%",
+          transition: "border-color 0.2s",
         }}
       />
 
